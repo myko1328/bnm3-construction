@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 259 188" role="img" aria-labelledby="title desc">
+  <title id="title">BNM3 Construction emblem</title>
+  <desc id="desc">A red letter A surrounded by two blue circular arrows</desc>
+
+  <path
+    d="M15 84C23 36 68 5 122 4c45-1 83 18 105 48l15-1-25 31-29-27 18-1c-19-20-49-32-83-31-43 0-77 23-86 61Z"
+    fill="#1426d4"
+    stroke="#05091f"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M244 102c-7 49-53 81-108 82-47 1-87-17-111-49l-16 2 25-31 30 27-18 1c20 21 52 32 89 31 44-1 79-24 87-63Z"
+    fill="#1426d4"
+    stroke="#05091f"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+
+  <path
+    d="M105 26c3-7 8-10 16-10h23c8 0 13 3 16 10l47 111c3 7 1 12-5 16l-14 8c-7 4-13 1-16-6l-13-31h-54l-14 31c-3 7-9 9-16 5l-14-8c-6-4-8-9-5-16Zm17 71h26l-13-31Z"
+    fill="#f20d17"
+    fill-rule="evenodd"
+    stroke="#05091f"
+    stroke-width="4"
+    stroke-linejoin="round"
+  />
+</svg>
