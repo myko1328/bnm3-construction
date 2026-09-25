@@ -8,7 +8,7 @@ const services = [
     description:
       "Purpose-built LPG piping, leak detection, automatic shutoff, testing, and inspection for safer homes.",
     items: ["LPG piping installation", "Gas-leak detection", "Automatic shutoff"],
-    href: "#assessment",
+    href: "/assessment/residential-lpg",
   },
   {
     number: "02",
@@ -26,6 +26,15 @@ const services = [
     description:
       "Reliable lighting installation, LED retrofits, and associated branch wiring for demanding facilities.",
     items: ["New industrial lighting", "LED retrofit projects", "Electrical branch wiring"],
+    href: "#assessment",
+  },
+  {
+    number: "04",
+    audience: "Residential",
+    title: "Smoke & Fire Alarm Systems",
+    description:
+      "Early-warning detection for homes through properly planned smoke alarms, heat detectors, and interconnected alarm systems.",
+    items: ["Smoke alarm installation", "Heat detection", "Interconnected alarms"],
     href: "#assessment",
   },
 ];
@@ -132,6 +141,7 @@ export default function Home() {
                   <div><span>01</span><strong>LPG & gas safety</strong></div>
                   <div><span>02</span><strong>Fire suppression</strong></div>
                   <div><span>03</span><strong>Industrial electrical</strong></div>
+                  <div><span>04</span><strong>Smoke & fire alarms</strong></div>
                 </div>
               </div>
               <div className="safety-stripe" aria-hidden="true" />
@@ -151,7 +161,7 @@ export default function Home() {
         <section className="section services-section" id="services">
           <div className="container">
             <div className="section-heading">
-              <div><div className="eyebrow"><span /> Focused expertise</div><h2>Three systems.<br />One accountable team.</h2></div>
+              <div><div className="eyebrow"><span /> Focused expertise</div><h2>Four systems.<br />One accountable team.</h2></div>
               <p>Start with the environment that matches your project. We’ll guide you through the right questions and next steps.</p>
             </div>
             <div className="service-grid">
@@ -223,7 +233,7 @@ export default function Home() {
             </div>
             <div className="assessment-options">
               {services.map((service) => (
-                <a href="#top" key={service.number} aria-label={`Start ${service.title} assessment`}>
+                <a href={service.number === "01" ? "/assessment/residential-lpg" : "#top"} key={service.number} aria-label={`Start ${service.title} assessment`}>
                   <span>{service.audience}</span><strong>{service.title}</strong><ArrowIcon />
                 </a>
               ))}
@@ -240,7 +250,7 @@ export default function Home() {
             <span className="brand-copy"><strong>BNM3</strong><span>Construction</span></span>
           </div>
           <p>LPG, fire-safety, and industrial electrical systems.</p>
-          <nav aria-label="Footer navigation"><a href="#services">Services</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a></nav>
+          <nav aria-label="Footer navigation"><a href="#services">Services</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a><a href="/blueprint/customer-flow">Flow blueprint</a></nav>
         </div>
         <div className="container footer-bottom"><span>© 2026 BNM3 Construction</span><span>Built for safer, better-documented projects.</span></div>
       </footer>

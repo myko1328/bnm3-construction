@@ -106,7 +106,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .section-heading { display: grid; grid-template-columns: 1fr .62fr; gap: 60px; align-items: end; margin-bottom: 48px; }
 .section-heading h2, .process-intro h2, .evidence-copy h2, .about-layout h2, .assessment-copy h2 { margin: 16px 0 0; font-size: clamp(38px, 4.5vw, 58px); line-height: 1.02; letter-spacing: -.045em; text-transform: uppercase; }
 .section-heading > p { color: var(--muted); font-size: 17px; line-height: 1.7; }
-.service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.service-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
 .service-card { position: relative; display: flex; flex-direction: column; min-height: 510px; background: white; border: 1px solid var(--line); padding: 27px; transition: transform .2s ease, box-shadow .2s ease, border .2s ease; }
 .service-card:hover { transform: translateY(-6px); border-color: #b8c0d0; box-shadow: 0 24px 55px rgba(16,38,96,.1); }
 .card-index { display: flex; align-items: center; justify-content: space-between; color: #596273; font-size: 10px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
@@ -154,7 +154,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .assessment-card::after { content: ""; position: absolute; width: 360px; height: 360px; border: 60px solid rgba(255,255,255,.09); border-radius: 50%; right: -100px; top: -190px; }
 .assessment-copy { position: relative; z-index: 1; max-width: 680px; }
 .assessment-copy p { max-width: 610px; color: rgba(255,255,255,.96); line-height: 1.7; }
-.assessment-options { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: rgba(255,255,255,.35); margin-top: 38px; }
+.assessment-options { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,.35); margin-top: 38px; }
 .assessment-options a { min-height: 152px; display: grid; grid-template-columns: 1fr auto; align-content: center; gap: 9px 20px; background: white; color: var(--ink); padding: 25px; transition: background .18s, color .18s; }
 .assessment-options a:hover { background: var(--blue-dark); color: white; }
 .assessment-options span { grid-column: 1/-1; color: var(--red); font-size: 9px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
