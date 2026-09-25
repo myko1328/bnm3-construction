@@ -38,7 +38,7 @@ export default function CustomerFlowPage() {
           <Arrow label="Select a service" />
           <Step number="02" status="Live" title="Service entry point" text="Residential LPG opens its own assessment. Other services remain visible but will receive separate funnels later." />
           <Arrow label="Start assessment" />
-          <Step number="03" status="POC" title="Guided LPG funnel" text="Nine short stages collect property, appliances, cylinders, route, safety options, access, location, and contact details." />
+          <Step number="03" status="POC" title="Guided LPG funnel" text="Ten short stages collect property, appliances, cylinders, route, safety options, access, contact details, and preferred site-visit availability." />
           <div className="flow-decision">
             <div className="decision-title"><span>Decision gate</span><strong>Possible active gas leak?</strong></div>
             <div className="decision-paths"><div className="danger"><b>YES / NOT SURE</b><span>Stop quotation flow and display safety guidance.</span></div><div className="safe"><b>NO</b><span>Continue the planned-project assessment.</span></div></div>
@@ -50,7 +50,7 @@ export default function CustomerFlowPage() {
             <article><span>C</span><h3>Site visit required</h3><p>Complex routing, property, supply arrangement, damage, or uncertainty needs inspection.</p></article>
           </div>
           <Arrow label="Transform answers" />
-          <Step number="04" status="POC" title="Personalized project brief" text="The customer sees an interpreted scope, classification, missing-information list, assumptions, and the recommended next step—not a fake instant quote." />
+          <Step number="04" status="POC" title="Personalized project brief" text="The customer sees an interpreted scope, classification, missing-information list, requested visit schedule, and the recommended next step—not a fake instant quote." />
         </div>
       </section>
 

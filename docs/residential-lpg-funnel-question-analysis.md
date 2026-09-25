@@ -243,6 +243,19 @@ Uploads are optional. The no-photo path must remain complete.
 
 Ask for the exact street address only when BNM3 needs to schedule a visit.
 
+### Stage 9 — Site visit request
+
+**Questions:**
+
+- Would you like to request a site visit?
+- Preferred date
+- Alternative date
+- Preferred time window
+- Optional site-access notes
+- Acknowledgement that the request remains subject to BNM3 confirmation
+
+Past dates are not accepted. The proof of concept records availability but does not reserve a live team calendar or confirm an appointment.
+
 ## 5. Conditional logic summary
 
 ```text
@@ -311,4 +324,3 @@ The family does not need to define the entire future platform. For the POC, they
 4. Which cities can BNM3 realistically serve?
 5. Who receives the completed assessment?
 6. What response time can BNM3 promise?
-
