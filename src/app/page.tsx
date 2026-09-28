@@ -110,7 +110,14 @@ export default function Home() {
             <span className="brand-copy"><strong>BNM3</strong><span>Construction</span></span>
           </a>
           <nav className="desktop-nav" aria-label="Main navigation">
-            <a href="#services">Services</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a>
+            <a href="#services">Services</a>
+            <div className="nav-dropdown">
+              <button type="button" aria-haspopup="true">Project Tools <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.5 6 4.5 4 4.5-4" /></svg></button>
+              <div className="nav-submenu">
+                <a href="/tools/lpg-budget-estimator"><strong>LPG Budget Estimator</strong><small>Explore a preliminary installation range</small></a>
+              </div>
+            </div>
+            <a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a>
           </nav>
           <a className="button button-small button-primary" href="#assessment">Request assessment <ArrowIcon /></a>
         </div>
@@ -126,6 +133,7 @@ export default function Home() {
               <p className="hero-lead">LPG, fire-safety, and industrial electrical systems for homes, commercial kitchens, and industrial facilities.</p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#assessment">Start a project assessment <ArrowIcon /></a>
+                <a className="text-link" href="/tools/lpg-budget-estimator">Explore LPG budget <ArrowIcon /></a>
                 <a className="text-link" href="#services">Explore our services <span>↓</span></a>
               </div>
               <div className="hero-proof" aria-label="Service strengths">
@@ -250,7 +258,7 @@ export default function Home() {
             <span className="brand-copy"><strong>BNM3</strong><span>Construction</span></span>
           </div>
           <p>LPG, fire-safety, and industrial electrical systems.</p>
-          <nav aria-label="Footer navigation"><a href="#services">Services</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a><a href="/blueprint/customer-flow">Flow blueprint</a></nav>
+          <nav aria-label="Footer navigation"><a href="#services">Services</a><a href="/tools/lpg-budget-estimator">LPG budget estimator</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a><a href="/blueprint/customer-flow">Flow blueprint</a></nav>
         </div>
         <div className="container footer-bottom"><span>© 2026 BNM3 Construction</span><span>Built for safer, better-documented projects.</span></div>
       </footer>

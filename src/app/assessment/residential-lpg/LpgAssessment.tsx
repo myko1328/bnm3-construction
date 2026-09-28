@@ -3,22 +3,63 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Select, { MultiValue, SingleValue } from "react-select";
+import { getAllMunicipalities, getBarangaysByMunicipality, getProvinceByCode } from "@aivangogh/ph-address";
 
 type Answers = Record<string, string>;
 type Choice = { value: string; label: string; hint?: string };
+type EquipmentOption = { value: string; label: string };
+type LocationOption = { value: string; label: string; name: string };
+type ScreenId = "work" | "existing" | "property" | "access" | "appliances" | "location" | "contact";
+type EstimateConfig = { pipeLength: string; points: string; floors: string; route: string; protection: string };
 
-const STORAGE_KEY = "bnm3-residential-lpg-poc";
-const steps = ["Safety", "Project", "Property", "Appliances", "Supply", "Route", "Protection", "Access", "Contact", "Site visit"];
+const STORAGE_KEY = "bnm3-residential-lpg-poc-v4";
+
+const equipmentOptions: EquipmentOption[] = [
+  { value: "tabletop-stove", label: "Tabletop gas stove (single or double burner)" },
+  { value: "freestanding-range", label: "Freestanding gas range" },
+  { value: "built-in-hob", label: "Built-in gas hob / cooktop" },
+  { value: "gas-oven", label: "Gas oven" },
+  { value: "water-heater", label: "LPG water heater" },
+  { value: "clothes-dryer", label: "LPG clothes dryer" },
+  { value: "outdoor-grill", label: "Outdoor barbecue grill" },
+  { value: "commercial-range", label: "Commercial cooking range" },
+  { value: "wok-range", label: "Wok range / Chinese burner" },
+  { value: "stock-pot-burner", label: "Stock-pot burner / soup burner" },
+  { value: "rice-cooker", label: "Commercial gas rice cooker" },
+  { value: "deep-fryer", label: "Gas deep fryer" },
+  { value: "griddle", label: "Gas griddle / hot plate" },
+  { value: "charbroiler", label: "Charbroiler / lava-rock grill" },
+  { value: "salamander", label: "Salamander / overhead broiler" },
+  { value: "steamer", label: "Gas steamer" },
+  { value: "shawarma", label: "Shawarma / vertical rotisserie" },
+  { value: "rotisserie", label: "Chicken rotisserie" },
+  { value: "bakery-oven", label: "Bakery deck or rack oven" },
+  { value: "convection-oven", label: "Gas convection oven" },
+  { value: "roaster", label: "Food or coffee roaster" },
+  { value: "other", label: "Other equipment" },
+];
+
+const SERVICE_CITY_CODES = new Set([
+  "1030900000", // Iligan City
+  "0730600000", // Cebu City
+  "1030500000", // Cagayan de Oro City
+  "1830200000", // Bacolod City
+  "1804502000", "1804504000", "1804509000", "1804510000", "1804515000", "1804516000",
+  "1804523000", "1804524000", "1804526000", "1804527000", "1804528000", "1804531000", // Negros Occidental cities
+  "1804604000", "1804606000", "1804608000", "1804610000", "1804611000", "1804621000", // Negros Oriental cities
+  "1001312000", "1001321000", // Malaybalay and Valencia, Bukidnon
+]);
 
 const choices = {
   yesNoUnsure: [
     { value: "yes", label: "Yes" }, { value: "no", label: "No" }, { value: "unsure", label: "Not sure" },
   ],
   work: [
-    { value: "new", label: "New LPG piping", hint: "Plan a new fixed LPG system" },
+    { value: "new", label: "New LPG installation", hint: "A new fixed LPG piping system" },
     { value: "extend", label: "Extend an existing system" },
-    { value: "replace", label: "Replace or upgrade" },
-    { value: "safety", label: "Add detection and shutoff" },
+    { value: "replace", label: "Replace or upgrade a system" },
+    { value: "safety", label: "Add a detector or automatic shutoff" },
     { value: "inspect", label: "Inspect an existing system" },
     { value: "unsure", label: "Not sure yet" },
   ],
@@ -26,15 +67,6 @@ const choices = {
     { value: "house", label: "Detached house" }, { value: "townhouse", label: "Townhouse / duplex" },
     { value: "condo", label: "Condominium unit" }, { value: "multi", label: "Apartment / multi-unit" },
     { value: "mixed", label: "Home with business use" }, { value: "other", label: "Other" },
-  ],
-  stage: [
-    { value: "planning", label: "Planning / design" }, { value: "construction", label: "Under construction" },
-    { value: "renovation", label: "Renovation" }, { value: "occupied", label: "Occupied home" },
-  ],
-  distance: [
-    { value: "under5", label: "Under 5 meters" }, { value: "5to10", label: "5–10 meters" },
-    { value: "11to20", label: "11–20 meters" }, { value: "over20", label: "Over 20 meters" },
-    { value: "unsure", label: "Not sure" },
   ],
 };
 
@@ -54,24 +86,55 @@ function ChoiceGroup({ name, label, value, options, onChange }: { name: string; 
   );
 }
 
-export default function LpgAssessment() {
-  const [step, setStep] = useState(0);
+export default function LpgAssessment({ startWithEstimator = false }: { startWithEstimator?: boolean }) {
+  const [screenIndex, setScreenIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
   const [ready, setReady] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showEstimator, setShowEstimator] = useState(startWithEstimator);
+  const [estimateSaved, setEstimateSaved] = useState(false);
+  const [estimate, setEstimate] = useState<EstimateConfig>({ pipeLength: "6to10", points: "1", floors: "1", route: "exposed", protection: "none" });
   const [error, setError] = useState("");
-  const today = useMemo(() => {
-    const date = new Date();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${date.getFullYear()}-${month}-${day}`;
-  }, []);
+  const municipalityOptions = useMemo<LocationOption[]>(() => getAllMunicipalities().filter((municipality) => SERVICE_CITY_CODES.has(municipality.psgcCode)).map((municipality) => {
+    const province = getProvinceByCode(municipality.provinceCode);
+    return {
+      value: municipality.psgcCode,
+      name: municipality.name,
+      label: municipality.psgcCode === "1830200000" ? "Bacolod City, Negros Occidental" : province ? `${municipality.name}, ${province.name}` : municipality.name,
+    };
+  }), []);
+
+  const barangayOptions = useMemo<LocationOption[]>(() => {
+    if (!answers.cityCode) return [];
+    return getBarangaysByMunicipality(answers.cityCode).map((barangay) => ({
+      value: barangay.psgcCode,
+      name: barangay.name,
+      label: barangay.name,
+    }));
+  }, [answers.cityCode]);
+
+  const screens = useMemo<ScreenId[]>(() => {
+    const items: ScreenId[] = ["work"];
+    if (answers.work && answers.work !== "new") items.push("existing");
+    items.push("property");
+    if (["condo", "multi", "mixed"].includes(answers.property)) items.push("access");
+    items.push("appliances", "location", "contact");
+    return items;
+  }, [answers.work, answers.property]);
+
+  const screen = screens[Math.min(screenIndex, screens.length - 1)];
+  const assessmentScreens: ScreenId[] = screens.filter((item) => item !== "contact");
+  const assessmentNumber = assessmentScreens.indexOf(screen) + 1;
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        try { const parsed = JSON.parse(saved); setAnswers(parsed.answers ?? {}); setStep(parsed.step ?? 0); } catch { /* Ignore invalid local data. */ }
+        try {
+          const parsed = JSON.parse(saved);
+          setAnswers(parsed.answers ?? {});
+          setScreenIndex(parsed.screenIndex ?? 0);
+        } catch { /* Ignore invalid local data. */ }
       }
       setReady(true);
     });
@@ -79,54 +142,175 @@ export default function LpgAssessment() {
   }, []);
 
   useEffect(() => {
-    if (ready) window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, step }));
-  }, [answers, step, ready]);
+    if (ready) window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers, screenIndex }));
+  }, [answers, screenIndex, ready]);
 
-  const set = (key: string, value: string) => { setAnswers((current) => ({ ...current, [key]: value })); setError(""); };
-  const requiredByStep = ["emergency", "work", "property", "appliances", "cylinders", "distance", "detector", "restrictions", "city", "visitRequested"];
+  const set = (key: string, value: string) => {
+    setAnswers((current) => ({ ...current, [key]: value }));
+    setError("");
+  };
 
   const classification = useMemo(() => {
-    const siteVisit = ["multi", "mixed"].includes(answers.property) || answers.manifold === "yes" || answers.route === "underground" || answers.damage === "yes" || answers.distance === "over20" || Number(answers.floors || 0) >= 3;
-    const review = siteVisit || ["condo", "other"].includes(answers.property) || ["unsure", "inside"].includes(answers.cylinderLocation) || ["concealed", "ceiling"].includes(answers.route) || answers.distance === "unsure" || answers.ratings === "no";
-    return siteVisit ? "Site Visit Required" : review ? "Technical Review" : "Standard Assessment";
+    const siteVisit = (answers.existingConcern && answers.existingConcern !== "no") || ["condo", "multi", "mixed", "other"].includes(answers.property) || (answers.accessApproval && answers.accessApproval !== "yes");
+    return siteVisit ? "Site Visit Recommended" : "Initial Review";
   }, [answers]);
 
-  const missing = useMemo(() => {
-    const items: string[] = [];
-    if (answers.ratings !== "yes") items.push("Appliance nameplate ratings");
-    if (!answers.route || answers.route === "unsure") items.push("Confirmed pipe route");
-    if (answers.cylinderLocation === "unsure") items.push("Proposed cylinder location");
-    if (!answers.photos || answers.photos === "no") items.push("Optional site photos");
-    return items;
-  }, [answers]);
+  const budget = useMemo(() => {
+    const distance: Record<string, [number, number]> = {
+      under5: [3, 5], "6to10": [6, 10], "11to20": [11, 20], over20: [21, 30], unsure: [8, 18],
+    };
+    const routeFactor: Record<string, number> = { exposed: 1, ceiling: 1.15, concealed: 1.35, masonry: 1.45, underground: 1.6, unsure: 1.25 };
+    const protection: Record<string, [number, number]> = { none: [0, 0], detector: [3500, 5500], shutoff: [9000, 15000] };
+    const [minimumMeters, maximumMeters] = distance[estimate.pipeLength] ?? distance.unsure;
+    const factor = routeFactor[estimate.route] ?? routeFactor.unsure;
+    const [protectionLow, protectionHigh] = protection[estimate.protection] ?? protection.none;
+    const points = Math.max(1, Number(estimate.points) || 1);
+    const floors = Math.max(1, Number(estimate.floors) || 1);
+    const baseLow = 12000 + points * 2500;
+    const baseHigh = 17000 + points * 4000;
+    const pipeLow = minimumMeters * 850 * factor;
+    const pipeHigh = maximumMeters * 1400 * factor;
+    const accessLow = (floors - 1) * 3000;
+    const accessHigh = (floors - 1) * 5000;
+    const round = (value: number) => Math.ceil(value / 500) * 500;
+    return {
+      base: [round(baseLow), round(baseHigh)],
+      pipe: [round(pipeLow), round(pipeHigh)],
+      access: [round(accessLow), round(accessHigh)],
+      protection: [protectionLow, protectionHigh],
+      total: [round(baseLow + pipeLow + accessLow + protectionLow), round(baseHigh + pipeHigh + accessHigh + protectionHigh)],
+    };
+  }, [estimate]);
+
+  const peso = (value: number) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }).format(value);
+
+  const openEstimator = () => {
+    const selectedEquipment = (answers.appliances || "").split("|").filter(Boolean).length;
+    setEstimate((current) => ({ ...current, points: String(Math.max(1, selectedEquipment)) }));
+    setShowEstimator(true);
+    setEstimateSaved(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const closeEstimator = () => {
+    if (startWithEstimator) return;
+    setShowEstimator(false);
+  };
 
   const validate = () => {
-    if (!answers[requiredByStep[step]]) { setError("Please answer the main question before continuing."); return false; }
-    if (step === 8 && (!answers.name || !answers.phone || answers.consent !== "yes")) { setError("Please provide your name, mobile number, and contact consent."); return false; }
-    if (step === 9 && answers.visitRequested === "yes" && (!answers.visitDate || !answers.alternateDate || !answers.visitTime || answers.visitAcknowledged !== "yes")) { setError("Please choose two dates and a time window, then acknowledge that BNM3 must confirm the visit."); return false; }
-    if (step === 9 && answers.visitRequested === "yes" && answers.visitDate === answers.alternateDate) { setError("Please choose a different alternative date."); return false; }
+    const required: Partial<Record<ScreenId, string>> = {
+      work: "work", existing: "existingConcern", property: "property",
+      access: "accessApproval", appliances: "appliances",
+    };
+    const requiredKey = required[screen];
+    if (requiredKey && !answers[requiredKey]) {
+      setError("Please answer this question before continuing.");
+      return false;
+    }
+    if (screen === "appliances" && answers.appliances.split("|").includes("other") && !answers.otherEquipment?.trim()) {
+      setError("Please describe the other LPG equipment.");
+      return false;
+    }
+    if (screen === "location" && (!answers.cityCode || !answers.barangayCode || !answers.streetAddress?.trim())) {
+      setError("Please select the city and barangay, then enter the street, subdivision, or building.");
+      return false;
+    }
+    if (screen === "contact" && (!answers.name || !answers.phone || answers.consent !== "yes")) {
+      setError("Please provide your name, mobile number, and contact consent.");
+      return false;
+    }
     return true;
   };
 
   const next = (event: FormEvent) => {
     event.preventDefault();
     if (!validate()) return;
-    if (step === steps.length - 1) setShowResult(true); else { setStep((value) => value + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }
+    if (screenIndex === screens.length - 1) setShowResult(true);
+    else {
+      setScreenIndex((value) => value + 1);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
-  const reset = () => { window.localStorage.removeItem(STORAGE_KEY); setAnswers({}); setStep(0); setShowResult(false); setError(""); };
+  const reset = () => {
+    window.localStorage.removeItem(STORAGE_KEY);
+    setAnswers({});
+    setScreenIndex(0);
+    setShowResult(false);
+    setShowEstimator(false);
+    setEstimateSaved(false);
+    setError("");
+  };
 
   if (!ready) return null;
 
-  if (answers.emergency === "yes" || answers.emergency === "unsure") {
+  if (showEstimator) {
+    const selectedEquipment = (answers.appliances || "").split("|").map((value) => equipmentOptions.find((item) => item.value === value)?.label).filter(Boolean);
     return (
-      <main className="poc-shell emergency-shell">
-        <div className="poc-emergency">
-          <span className="poc-kicker">Safety first</span>
-          <h1>Do not continue with an online quotation.</h1>
-          <p>If you smell gas or suspect a leak, avoid flames and electrical switches, leave the affected area, and contact the appropriate emergency service or qualified LPG professional from a safe location.</p>
-          <p className="poc-disclaimer">This page does not diagnose a leak or replace emergency assistance.</p>
-          <button className="poc-secondary" type="button" onClick={reset}>Start over</button>
+      <main className="poc-shell estimator-shell">
+        <header className="poc-header">
+          <Link href="/" aria-label="Return to BNM3 Construction home"><Image src="/bnm3-logo.png" alt="" width={259} height={188} /></Link>
+          <div><span>Residential LPG</span><strong>Budget Explorer</strong></div>
+          {startWithEstimator ? <Link className="poc-exit estimator-exit" href="/">Exit</Link> : <button className="poc-exit estimator-exit" type="button" onClick={closeEstimator}>Back</button>}
+        </header>
+
+        <section className="estimator-heading">
+          <div><span className="poc-kicker">Optional planning tool</span><h1>Explore a preliminary budget.</h1><p>Adjust the project assumptions to see how they may affect the budget range.</p></div>
+          <div className="estimator-demo"><strong>Proof of concept</strong><span>Illustrative rates only—not approved customer pricing.</span></div>
+        </section>
+
+        <div className="estimator-layout">
+          <aside className="estimator-controls" aria-label="Estimate configuration">
+            <div className="estimator-section"><span>{startWithEstimator ? "Start your configuration" : "Included from your request"}</span><strong>{selectedEquipment.length ? selectedEquipment.join(", ") : "Select the equipment that will use LPG."}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</strong></div>
+
+            <div className="estimator-field"><label htmlFor="estimator-equipment">LPG equipment</label><Select<EquipmentOption, true> inputId="estimator-equipment" instanceId={startWithEstimator ? "direct-estimator-equipment" : "lead-estimator-equipment"} classNamePrefix="equipment-select" isMulti isSearchable closeMenuOnSelect={false} placeholder="Search or select equipment..." noOptionsMessage={() => "No matching equipment"} options={equipmentOptions} value={equipmentOptions.filter((option) => (answers.appliances || "").split("|").includes(option.value))} onChange={(selected: MultiValue<EquipmentOption>) => { const values = selected.map((option) => option.value); setAnswers((current) => ({ ...current, appliances: values.join("|"), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setEstimate((current) => ({ ...current, points: String(Math.max(1, values.length)) })); }} /></div>
+            {(answers.appliances || "").split("|").includes("other") && <label className="estimator-field">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}
+
+            <label className="estimator-field">Appliance connection points
+              <input type="number" min="1" max="20" value={estimate.points} onChange={(event) => setEstimate((current) => ({ ...current, points: event.target.value }))} />
+              <small>Usually one point per connected appliance.</small>
+            </label>
+
+            <label className="estimator-field">Approximate pipe length
+              <select value={estimate.pipeLength} onChange={(event) => setEstimate((current) => ({ ...current, pipeLength: event.target.value }))}>
+                <option value="under5">Up to 5 meters</option><option value="6to10">6–10 meters</option><option value="11to20">11–20 meters</option><option value="over20">More than 20 meters</option><option value="unsure">I&apos;m not sure</option>
+              </select>
+            </label>
+
+            <label className="estimator-field">Floors crossed by the pipe route
+              <input type="number" min="1" max="10" value={estimate.floors} onChange={(event) => setEstimate((current) => ({ ...current, floors: event.target.value }))} />
+            </label>
+
+            <label className="estimator-field">Likely installation route
+              <select value={estimate.route} onChange={(event) => setEstimate((current) => ({ ...current, route: event.target.value }))}>
+                <option value="exposed">Exposed along a wall</option><option value="ceiling">Above a ceiling</option><option value="concealed">Concealed inside a wall</option><option value="masonry">Through concrete or masonry</option><option value="underground">Underground</option><option value="unsure">I&apos;m not sure</option>
+              </select>
+            </label>
+
+            <label className="estimator-field">Safety protection
+              <select value={estimate.protection} onChange={(event) => setEstimate((current) => ({ ...current, protection: event.target.value }))}>
+                <option value="none">Standard installation only</option><option value="detector">Include gas-leak detector</option><option value="shutoff">Detector with automatic shutoff</option>
+              </select>
+            </label>
+          </aside>
+
+          <section className="estimator-output" aria-live="polite">
+            <span className="estimator-eyebrow">Preliminary planning range</span>
+            <div className="estimator-total"><strong>{peso(budget.total[0])}</strong><span>to</span><strong>{peso(budget.total[1])}</strong></div>
+            <p>This range changes as you adjust the assumptions. It is not a formal quotation.</p>
+
+            <dl className="estimator-breakdown">
+              <div><dt>Base installation and connections</dt><dd>{peso(budget.base[0])}–{peso(budget.base[1])}</dd></div>
+              <div><dt>Estimated piping and route</dt><dd>{peso(budget.pipe[0])}–{peso(budget.pipe[1])}</dd></div>
+              <div><dt>Multi-floor access allowance</dt><dd>{peso(budget.access[0])}–{peso(budget.access[1])}</dd></div>
+              <div><dt>Selected safety protection</dt><dd>{peso(budget.protection[0])}–{peso(budget.protection[1])}</dd></div>
+            </dl>
+
+            <div className="estimator-notice"><strong>Site verification required</strong><p>Final pricing depends on measurements, appliance ratings, pipe sizing, cylinder and regulator requirements, access conditions, and the approved technical scope.</p></div>
+
+            {startWithEstimator ? <Link className="poc-primary estimator-save" href="/assessment/residential-lpg" onClick={() => { const savedAnswers = { ...answers, estimatePipeLength: estimate.pipeLength, estimatePoints: estimate.points, estimateFloors: estimate.floors, estimateRoute: estimate.route, estimateProtection: estimate.protection, estimateBudgetLow: String(budget.total[0]), estimateBudgetHigh: String(budget.total[1]) }; window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ answers: savedAnswers, screenIndex: 0 })); }}>Request a technical assessment <span aria-hidden="true">→</span></Link> : estimateSaved ? <p className="estimator-saved" role="status">Budget configuration saved to this demonstration lead.</p> : <button className="poc-primary estimator-save" type="button" onClick={() => { setAnswers((current) => ({ ...current, estimatePipeLength: estimate.pipeLength, estimatePoints: estimate.points, estimateFloors: estimate.floors, estimateRoute: estimate.route, estimateProtection: estimate.protection, estimateBudgetLow: String(budget.total[0]), estimateBudgetHigh: String(budget.total[1]) })); setEstimateSaved(true); }}>Save budget to my request</button>}
+            {startWithEstimator ? <Link className="poc-reset estimator-home-link" href="/">Finish without submitting details</Link> : <button className="poc-reset" type="button" onClick={closeEstimator}>Return to lead confirmation</button>}
+          </section>
         </div>
       </main>
     );
@@ -136,54 +320,59 @@ export default function LpgAssessment() {
     return (
       <main className="poc-shell">
         <section className="poc-result" aria-labelledby="result-title">
-          <div><span className="poc-kicker">Assessment complete</span><h1 id="result-title">Your project brief is ready.</h1><p>This is a proof-of-concept summary, not a quotation or compliance approval.</p></div>
-          <div className={`result-status ${classification === "Standard Assessment" ? "standard" : "review"}`}><span>Recommended path</span><strong>{classification}</strong></div>
+          <div><span className="poc-kicker">Lead confirmation preview</span><h1 id="result-title">Your request is confirmed.</h1><p>BNM3 will review these initial details and contact you. This proof of concept does not send the lead to an external system yet.</p></div>
+          <div className="result-status review"><span>Recommended path</span><strong>{classification}</strong></div>
           <dl className="result-grid">
-            <div><dt>Requested work</dt><dd>{choices.work.find((x) => x.value === answers.work)?.label}</dd></div>
-            <div><dt>Property</dt><dd>{choices.property.find((x) => x.value === answers.property)?.label}, {answers.floors || "?"} floor(s)</dd></div>
-            <div><dt>Appliances</dt><dd>{answers.appliances}</dd></div>
-            <div><dt>Supply</dt><dd>{answers.cylinders} cylinder(s), {answers.cylinderLocation || "location unconfirmed"}</dd></div>
-            <div><dt>Route</dt><dd>{choices.distance.find((x) => x.value === answers.distance)?.label}; {answers.route || "route unconfirmed"}</dd></div>
-            <div><dt>Protection</dt><dd>Detector: {answers.detector}; automatic shutoff: {answers.shutoff || "unsure"}</dd></div>
-            <div><dt>Project area</dt><dd>{answers.area ? `${answers.area}, ` : ""}{answers.city}</dd></div>
-            <div><dt>Preferred timing</dt><dd>{answers.timing || "Flexible"}</dd></div>
-            <div><dt>Site visit</dt><dd>{answers.visitRequested === "yes" ? `${answers.visitDate}, ${answers.visitTime}; alternative ${answers.alternateDate}` : "Not requested yet"}</dd></div>
+            <div><dt>Requested work</dt><dd>{choices.work.find((item) => item.value === answers.work)?.label}</dd></div>
+            <div><dt>Property</dt><dd>{choices.property.find((item) => item.value === answers.property)?.label}</dd></div>
+            <div><dt>LPG use</dt><dd>{answers.appliances?.split("|").map((value) => equipmentOptions.find((item) => item.value === value)?.label).filter(Boolean).join(", ")}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</dd></div>
+            <div><dt>Project address</dt><dd>{[answers.houseNumber, answers.streetAddress, answers.area, answers.city].filter(Boolean).join(", ")}</dd></div>
           </dl>
-          <div className="result-next"><h2>Before formal estimating</h2>{missing.length ? <ul>{missing.map((item) => <li key={item}>{item}</li>)}</ul> : <p>The information provided is ready for initial estimator review.</p>}</div>
-          <div className="poc-actions"><button className="poc-secondary" type="button" onClick={() => setShowResult(false)}>Review answers</button><button className="poc-primary" type="button" onClick={() => alert("POC only: external submission will be added after family approval.")}>Submit to BNM3</button></div>
+          <div className="result-next"><h2>What happens next?</h2><p>A BNM3 representative will call to review the request, ask any necessary follow-up questions, and arrange a site visit with you when needed.</p></div>
+          <div className="budget-invitation"><span className="poc-kicker">Optional next step</span><h2>Want to explore a preliminary budget?</h2><p>Adjust a few project assumptions and see an illustrative range. Your request is already complete.</p></div>
+          <div className="poc-actions"><button className="poc-secondary" type="button" onClick={() => setShowResult(false)}>Review answers</button><button className="poc-primary" type="button" onClick={openEstimator}>Explore budget <span aria-hidden="true">→</span></button></div>
           <button className="poc-reset" type="button" onClick={reset}>Clear and start another assessment</button>
         </section>
       </main>
     );
   }
 
+  const phaseLabel = screen === "contact" ? "Your details" : `Question ${assessmentNumber} of ${assessmentScreens.length}`;
+  const progressValue = screenIndex + 1;
+
   return (
     <main className="poc-shell">
       <header className="poc-header">
         <Link href="/" aria-label="Return to BNM3 Construction home"><Image src="/bnm3-logo.png" alt="" width={259} height={188} /></Link>
-        <div><span>Residential LPG</span><strong>Project Assessment</strong></div>
+        <div><span>Residential LPG</span><strong>Quick Assessment</strong></div>
         <Link href="/" className="poc-exit">Exit</Link>
       </header>
 
-      <div className="poc-progress" aria-label={`Step ${step + 1} of ${steps.length}: ${steps[step]}`}>
-        <div><span>Step {step + 1} of {steps.length}</span><strong>{steps[step]}</strong></div>
-        <progress value={step + 1} max={steps.length}>{step + 1} of {steps.length}</progress>
+      <div className="poc-progress" aria-label={`${phaseLabel}: step ${progressValue} of ${screens.length}`}>
+        <div><span>{phaseLabel}</span><strong>{screen === "contact" ? "Contact" : "Quick assessment"}</strong></div>
+        <progress value={progressValue} max={screens.length}>{progressValue} of {screens.length}</progress>
       </div>
 
       <form className="poc-card" onSubmit={next}>
-        {step === 0 && <><span className="poc-kicker">Before we begin</span><h1>Is there a possible gas leak right now?</h1><p className="poc-intro">This assessment is for planned work—not emergency diagnosis.</p><ChoiceGroup name="emergency" label="Do you currently smell gas or suspect an active LPG leak?" value={answers.emergency} options={choices.yesNoUnsure} onChange={(v) => set("emergency", v)} /></>}
-        {step === 1 && <><span className="poc-kicker">Project scope</span><h1>What would you like us to assess?</h1><ChoiceGroup name="work" label="Choose the closest match" value={answers.work} options={choices.work} onChange={(v) => set("work", v)} />{answers.work && answers.work !== "new" && <ChoiceGroup name="damage" label="Is there known damage, corrosion, modification, or repeated leakage?" value={answers.damage} options={choices.yesNoUnsure} onChange={(v) => set("damage", v)} />}</>}
-        {step === 2 && <><span className="poc-kicker">Property</span><h1>Where will the system be installed?</h1><ChoiceGroup name="property" label="Property type" value={answers.property} options={choices.property} onChange={(v) => set("property", v)} /><ChoiceGroup name="projectStage" label="Current project stage" value={answers.projectStage} options={choices.stage} onChange={(v) => set("projectStage", v)} /><label className="poc-input">How many floors will the LPG route cross?<input type="number" min="1" max="20" value={answers.floors || ""} onChange={(e) => set("floors", e.target.value)} placeholder="Example: 1" /></label></>}
-        {step === 3 && <><span className="poc-kicker">Gas demand</span><h1>Which appliances will use LPG?</h1><label className="poc-input">List the appliance types and quantities<textarea value={answers.appliances || ""} onChange={(e) => set("appliances", e.target.value)} placeholder="Example: 1 cooktop and 1 oven" rows={4} /></label><ChoiceGroup name="ratings" label="Do you have the gas-input ratings from their nameplates?" value={answers.ratings} options={[{value:"yes",label:"Yes, available"},{value:"no",label:"Not yet"},{value:"unsure",label:"Not sure where to find them"}]} onChange={(v) => set("ratings", v)} /></>}
-        {step === 4 && <><span className="poc-kicker">LPG supply</span><h1>Tell us about the cylinders.</h1><label className="poc-input">How many cylinders?<input type="number" min="1" max="20" value={answers.cylinders || ""} onChange={(e) => set("cylinders", e.target.value)} placeholder="Example: 2" /></label><ChoiceGroup name="manifold" label="Will they use a changeover or manifold arrangement?" value={answers.manifold} options={choices.yesNoUnsure} onChange={(v) => set("manifold", v)} /><ChoiceGroup name="cylinderLocation" label="Where are or will the cylinders be located?" value={answers.cylinderLocation} options={[{value:"outdoor",label:"Outdoors beside the house"},{value:"cabinet",label:"Outdoor ventilated cabinet"},{value:"service",label:"Separate service area"},{value:"inside",label:"Inside the home / kitchen"},{value:"condo",label:"Condominium service area"},{value:"unsure",label:"Not decided"}]} onChange={(v) => set("cylinderLocation", v)} /></>}
-        {step === 5 && <><span className="poc-kicker">Pipe route</span><h1>What does the installation route look like?</h1><ChoiceGroup name="distance" label="Distance to the furthest appliance" value={answers.distance} options={choices.distance} onChange={(v) => set("distance", v)} /><ChoiceGroup name="route" label="Main route condition" value={answers.route} options={[{value:"exposed",label:"Exposed along a wall"},{value:"ceiling",label:"Above a ceiling"},{value:"concealed",label:"Concealed inside a wall"},{value:"concrete",label:"Through concrete / masonry"},{value:"underground",label:"Underground"},{value:"unsure",label:"Not sure"}]} onChange={(v) => set("route", v)} /><label className="poc-input">How many appliance connection points?<input type="number" min="1" max="30" value={answers.points || ""} onChange={(e) => set("points", e.target.value)} placeholder="Example: 2" /></label></>}
-        {step === 6 && <><span className="poc-kicker">Safety options</span><h1>What protection should be assessed?</h1><ChoiceGroup name="detector" label="Is a gas-leak detector already installed?" value={answers.detector} options={choices.yesNoUnsure} onChange={(v) => set("detector", v)} /><ChoiceGroup name="shutoff" label="Include an automatic gas shutoff in the assessment?" value={answers.shutoff} options={[{value:"yes",label:"Yes"},{value:"no",label:"No"},{value:"explain",label:"Please explain the option"}]} onChange={(v) => set("shutoff", v)} /><ChoiceGroup name="power" label="Is electrical power available near the detector/controller area?" value={answers.power} options={choices.yesNoUnsure} onChange={(v) => set("power", v)} /></>}
-        {step === 7 && <><span className="poc-kicker">Planning</span><h1>Are there any access restrictions?</h1><ChoiceGroup name="restrictions" label="Subdivision, condominium, parking, or work-hour restrictions?" value={answers.restrictions} options={choices.yesNoUnsure} onChange={(v) => set("restrictions", v)} /><label className="poc-input">Preferred timing<input value={answers.timing || ""} onChange={(e) => set("timing", e.target.value)} placeholder="Example: Within the next month" /></label><ChoiceGroup name="photos" label="Do you have site photos available later?" value={answers.photos} options={[{value:"yes",label:"Yes"},{value:"no",label:"No—and I can still continue"}]} onChange={(v) => set("photos", v)} /><label className="poc-input">Anything else the estimator should know?<textarea value={answers.notes || ""} onChange={(e) => set("notes", e.target.value)} rows={3} /></label></>}
-        {step === 8 && <><span className="poc-kicker">Contact details</span><h1>Where is the project, and how can we reach you?</h1><div className="poc-two"><label className="poc-input">City / municipality<input value={answers.city || ""} onChange={(e) => set("city", e.target.value)} /></label><label className="poc-input">Barangay / project area<input value={answers.area || ""} onChange={(e) => set("area", e.target.value)} /></label><label className="poc-input">Your name<input autoComplete="name" value={answers.name || ""} onChange={(e) => set("name", e.target.value)} /></label><label className="poc-input">Mobile number<input type="tel" autoComplete="tel" value={answers.phone || ""} onChange={(e) => set("phone", e.target.value)} /></label></div><label className="poc-consent"><input type="checkbox" checked={answers.consent === "yes"} onChange={(e) => set("consent", e.target.checked ? "yes" : "no")} /><span>BNM3 may contact me about this project assessment.</span></label></>}
-        {step === 9 && <><span className="poc-kicker">Site visit request</span><h1>When can BNM3 visit the property?</h1><p className="poc-intro">Choose your preferred availability. The visit is requested—not confirmed—until BNM3 reviews the project and contacts you.</p><ChoiceGroup name="visitRequested" label="Would you like to request a site visit?" value={answers.visitRequested} options={[{value:"yes",label:"Yes, request a visit"},{value:"no",label:"Not yet"}]} onChange={(v) => set("visitRequested", v)} />{answers.visitRequested === "yes" && <><div className="poc-two"><label className="poc-input">Preferred date<input type="date" min={today} value={answers.visitDate || ""} onChange={(e) => set("visitDate", e.target.value)} /></label><label className="poc-input">Alternative date<input type="date" min={answers.visitDate || today} value={answers.alternateDate || ""} onChange={(e) => set("alternateDate", e.target.value)} /></label></div><ChoiceGroup name="visitTime" label="Preferred time window" value={answers.visitTime} options={[{value:"8:00–10:00 AM",label:"8:00–10:00 AM"},{value:"10:00 AM–12:00 PM",label:"10:00 AM–12:00 PM"},{value:"1:00–3:00 PM",label:"1:00–3:00 PM"},{value:"3:00–5:00 PM",label:"3:00–5:00 PM"}]} onChange={(v) => set("visitTime", v)} /><label className="poc-input">Site access notes, optional<textarea value={answers.accessNotes || ""} onChange={(e) => set("accessNotes", e.target.value)} rows={3} placeholder="Gate instructions, on-site contact, parking, or other details" /></label><label className="poc-consent"><input type="checkbox" checked={answers.visitAcknowledged === "yes"} onChange={(e) => set("visitAcknowledged", e.target.checked ? "yes" : "no")} /><span>I understand that these dates are requested and the appointment is subject to confirmation by BNM3.</span></label></>}</>}
+        {screen === "work" && <><span className="poc-kicker">Project</span><h1>What would you like us to help with?</h1><ChoiceGroup name="work" label="Choose the closest match" value={answers.work} options={choices.work} onChange={(value) => set("work", value)} /></>}
+
+        {screen === "existing" && <><span className="poc-kicker">One follow-up</span><h1>Does the existing LPG system have a known concern?</h1><p className="poc-intro">We ask this only because you selected work involving an existing system.</p><ChoiceGroup name="existingConcern" label="Damage, corrosion, modification, recurring issues, or suspected leakage?" value={answers.existingConcern} options={choices.yesNoUnsure} onChange={(value) => set("existingConcern", value)} /></>}
+
+        {screen === "property" && <><span className="poc-kicker">Property</span><h1>Where will the LPG work be done?</h1><ChoiceGroup name="property" label="Property type" value={answers.property} options={choices.property} onChange={(value) => set("property", value)} /></>}
+
+        {screen === "access" && <><span className="poc-kicker">One follow-up</span><h1>Can LPG work be approved and accessed at the property?</h1><p className="poc-intro">Some buildings require administration approval or have work-hour restrictions.</p><ChoiceGroup name="accessApproval" label="Is approval or site access already available?" value={answers.accessApproval} options={choices.yesNoUnsure} onChange={(value) => set("accessApproval", value)} /></>}
+
+        {screen === "appliances" && <><span className="poc-kicker">LPG use</span><h1>What equipment will use LPG?</h1><div className="poc-input"><label htmlFor="lpg-equipment">Select all that apply</label><Select<EquipmentOption, true> inputId="lpg-equipment" instanceId="lpg-equipment-select" classNamePrefix="equipment-select" isMulti isSearchable closeMenuOnSelect={false} placeholder="Search or select equipment..." noOptionsMessage={() => "No matching equipment"} options={equipmentOptions} value={equipmentOptions.filter((option) => (answers.appliances || "").split("|").includes(option.value))} onChange={(selected: MultiValue<EquipmentOption>) => set("appliances", selected.map((option) => option.value).join("|"))} /></div>{(answers.appliances || "").split("|").includes("other") && <label className="poc-input">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}<p className="poc-intro">You can type to search. Quantities, equipment ratings, and exact connections will be confirmed during the site visit.</p></>}
+
+        {screen === "location" && <><span className="poc-kicker">Location</span><h1>Where is the project?</h1><div className="poc-two"><div className="poc-input"><label htmlFor="project-city">City / municipality</label><Select<LocationOption> inputId="project-city" instanceId="project-city-select" classNamePrefix="equipment-select" isSearchable placeholder="Search city or municipality..." noOptionsMessage={() => "No matching city or municipality"} options={municipalityOptions} value={municipalityOptions.find((option) => option.value === answers.cityCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, cityCode: selected?.value ?? "", city: selected?.name ?? "", barangayCode: "", area: "" })); setError(""); }} /></div><div className="poc-input"><label htmlFor="project-barangay">Barangay</label><Select<LocationOption> inputId="project-barangay" instanceId="project-barangay-select" classNamePrefix="equipment-select" isSearchable isDisabled={!answers.cityCode} placeholder={answers.cityCode ? "Search barangay..." : "Select a city first"} noOptionsMessage={() => "No matching barangay"} options={barangayOptions} value={barangayOptions.find((option) => option.value === answers.barangayCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, barangayCode: selected?.value ?? "", area: selected?.name ?? "" })); setError(""); }} /></div></div><label className="poc-input">Street, subdivision, or building<input autoComplete="address-line1" value={answers.streetAddress || ""} onChange={(event) => set("streetAddress", event.target.value)} placeholder="Example: Mabini Street or Sunrise Subdivision" /></label><label className="poc-input">House or unit number (Optional)<input autoComplete="address-line2" value={answers.houseNumber || ""} onChange={(event) => set("houseNumber", event.target.value)} placeholder="Example: House 24 or Unit 3B" /></label><p className="poc-intro">Start typing to quickly find the project location.</p></>}
+
+        {screen === "contact" && <><span className="poc-kicker">Assessment complete</span><h1>How can BNM3 reach you?</h1><p className="poc-intro">Your quick assessment is done. Add your details so the team can review it.</p><div className="poc-two"><label className="poc-input">Your name<input autoComplete="name" value={answers.name || ""} onChange={(event) => set("name", event.target.value)} /></label><label className="poc-input">Mobile number<input type="tel" autoComplete="tel" value={answers.phone || ""} onChange={(event) => set("phone", event.target.value)} /></label></div><label className="poc-consent"><input type="checkbox" checked={answers.consent === "yes"} onChange={(event) => set("consent", event.target.checked ? "yes" : "no")} /><span>BNM3 may contact me about this project assessment.</span></label></>}
 
         {error && <p className="poc-error" role="alert">{error}</p>}
-        <div className="poc-actions">{step > 0 ? <button className="poc-secondary" type="button" onClick={() => { setStep(step - 1); setError(""); }}>Back</button> : <span />}<button className="poc-primary" type="submit">{step === steps.length - 1 ? "Build my project brief" : "Continue"}<span aria-hidden="true">→</span></button></div>
+        <div className="poc-actions">
+          {screenIndex > 0 ? <button className="poc-secondary" type="button" onClick={() => { setScreenIndex((value) => value - 1); setError(""); }}>Back</button> : <span />}
+          <button className="poc-primary" type="submit">{screenIndex === screens.length - 1 ? "Build my project brief" : "Continue"}<span aria-hidden="true">→</span></button>
+        </div>
         <p className="poc-save">Progress is saved only in this browser for this demonstration.</p>
       </form>
     </main>

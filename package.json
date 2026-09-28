@@ -9,9 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aivangogh/ph-address": "^2026.2.3",
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-select": "^5.10.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

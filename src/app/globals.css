@@ -48,10 +48,22 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .desktop-nav a::after { content: ""; position: absolute; left: 0; right: 100%; bottom: -9px; height: 3px; background: var(--red); transition: right .18s ease; }
 .desktop-nav a:hover { color: var(--blue); }
 .desktop-nav a:hover::after { right: 0; }
+.nav-dropdown { position: relative; }
+.nav-dropdown > button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; color: #3d4961; padding: 12px 0; font: inherit; font-size: 14px; font-weight: 800; cursor: pointer; }
+.nav-dropdown > button svg { width: 15px; height: 15px; fill: none; stroke: var(--red); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
+.nav-dropdown:hover > button, .nav-dropdown:focus-within > button { color: var(--blue); }
+.nav-dropdown:hover > button svg, .nav-dropdown:focus-within > button svg { transform: rotate(180deg); }
+.nav-submenu { position: absolute; visibility: hidden; opacity: 0; top: calc(100% + 10px); left: 50%; z-index: 30; width: 290px; padding: 8px; background: white; border: 1px solid var(--line); border-top: 4px solid var(--blue); box-shadow: 0 18px 42px rgba(4,13,59,.18); transform: translate(-50%, 8px); transition: opacity .16s ease, transform .16s ease, visibility .16s; }
+.nav-dropdown:hover .nav-submenu, .nav-dropdown:focus-within .nav-submenu { visibility: visible; opacity: 1; transform: translate(-50%, 0); }
+.desktop-nav .nav-submenu a { display: grid; gap: 5px; padding: 15px 16px; color: var(--blue-deep); }
+.desktop-nav .nav-submenu a::after { display: none; }
+.desktop-nav .nav-submenu a:hover { color: var(--blue); background: #f1f3ff; }
+.nav-submenu strong { font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+.nav-submenu small { color: #697386; font-size: 11px; font-weight: 500; line-height: 1.4; }
 
 .button { min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 12px; padding: 0 23px; border: 1px solid transparent; font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: .045em; transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
 .button:hover { transform: translateY(-2px); }
-.button:focus-visible, .brand:focus-visible, .text-link:focus-visible, .desktop-nav a:focus-visible, .service-card a:focus-visible, .assessment-options a:focus-visible, .footer-main nav a:focus-visible { outline: 3px solid #ffcc00; outline-offset: 3px; }
+.button:focus-visible, .brand:focus-visible, .text-link:focus-visible, .desktop-nav a:focus-visible, .nav-dropdown > button:focus-visible, .service-card a:focus-visible, .assessment-options a:focus-visible, .footer-main nav a:focus-visible { outline: 3px solid #ffcc00; outline-offset: 3px; }
 .button-primary { background: var(--red); color: white; box-shadow: 0 12px 30px rgba(243,19,27,.22); }
 .button-primary:hover { background: var(--red-dark); }
 .button-small { min-height: 44px; padding-inline: 17px; font-size: 12px; }
