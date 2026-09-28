@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import Select, { MultiValue, SingleValue } from "react-select";
+import Select, { SingleValue } from "react-select";
 import { getAllMunicipalities, getBarangaysByMunicipality, getProvinceByCode } from "@aivangogh/ph-address";
 
 type Answers = Record<string, string>;
@@ -83,6 +83,31 @@ function ChoiceGroup({ name, label, value, options, onChange }: { name: string; 
         ))}
       </div>
     </fieldset>
+  );
+}
+
+function EquipmentPicker({ id, values, onChange }: { id: string; values: string[]; onChange: (values: string[]) => void }) {
+  const availableOptions = equipmentOptions.filter((option) => !values.includes(option.value));
+  const selectedOptions = values.map((value) => equipmentOptions.find((option) => option.value === value)).filter((option): option is EquipmentOption => Boolean(option));
+
+  return (
+    <>
+      <Select<EquipmentOption>
+        inputId={id}
+        instanceId={`${id}-select`}
+        classNamePrefix="equipment-select"
+        isSearchable
+        placeholder="Search and add equipment..."
+        noOptionsMessage={() => "All matching equipment is already selected"}
+        options={availableOptions}
+        value={null}
+        onChange={(selected: SingleValue<EquipmentOption>) => selected && onChange([...values, selected.value])}
+      />
+      {selectedOptions.length > 0 && <div className="selected-equipment" aria-label="Selected LPG equipment">
+        <span>Selected equipment</span>
+        <ul>{selectedOptions.map((option) => <li key={option.value}><strong>{option.label}</strong><button type="button" aria-label={`Remove ${option.label}`} onClick={() => onChange(values.filter((value) => value !== option.value))}>Remove</button></li>)}</ul>
+      </div>}
+    </>
   );
 }
 
@@ -263,7 +288,7 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
           <aside className="estimator-controls" aria-label="Estimate configuration">
             <div className="estimator-section"><span>{startWithEstimator ? "Start your configuration" : "Included from your request"}</span><strong>{selectedEquipment.length ? selectedEquipment.join(", ") : "Select the equipment that will use LPG."}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</strong></div>
 
-            <div className="estimator-field"><label htmlFor="estimator-equipment">LPG equipment</label><Select<EquipmentOption, true> inputId="estimator-equipment" instanceId={startWithEstimator ? "direct-estimator-equipment" : "lead-estimator-equipment"} classNamePrefix="equipment-select" isMulti isSearchable closeMenuOnSelect={false} placeholder="Search or select equipment..." noOptionsMessage={() => "No matching equipment"} options={equipmentOptions} value={equipmentOptions.filter((option) => (answers.appliances || "").split("|").includes(option.value))} onChange={(selected: MultiValue<EquipmentOption>) => { const values = selected.map((option) => option.value); setAnswers((current) => ({ ...current, appliances: values.join("|"), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setEstimate((current) => ({ ...current, points: String(Math.max(1, values.length)) })); }} /></div>
+            <div className="estimator-field"><label htmlFor="estimator-equipment">Add LPG equipment</label><EquipmentPicker id={startWithEstimator ? "direct-estimator-equipment" : "lead-estimator-equipment"} values={(answers.appliances || "").split("|").filter(Boolean)} onChange={(values) => { setAnswers((current) => ({ ...current, appliances: values.join("|"), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setEstimate((current) => ({ ...current, points: String(Math.max(1, values.length)) })); }} /></div>
             {(answers.appliances || "").split("|").includes("other") && <label className="estimator-field">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}
 
             <label className="estimator-field">Appliance connection points
@@ -362,7 +387,7 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
 
         {screen === "access" && <><span className="poc-kicker">One follow-up</span><h1>Can LPG work be approved and accessed at the property?</h1><p className="poc-intro">Some buildings require administration approval or have work-hour restrictions.</p><ChoiceGroup name="accessApproval" label="Is approval or site access already available?" value={answers.accessApproval} options={choices.yesNoUnsure} onChange={(value) => set("accessApproval", value)} /></>}
 
-        {screen === "appliances" && <><span className="poc-kicker">LPG use</span><h1>What equipment will use LPG?</h1><div className="poc-input"><label htmlFor="lpg-equipment">Select all that apply</label><Select<EquipmentOption, true> inputId="lpg-equipment" instanceId="lpg-equipment-select" classNamePrefix="equipment-select" isMulti isSearchable closeMenuOnSelect={false} placeholder="Search or select equipment..." noOptionsMessage={() => "No matching equipment"} options={equipmentOptions} value={equipmentOptions.filter((option) => (answers.appliances || "").split("|").includes(option.value))} onChange={(selected: MultiValue<EquipmentOption>) => set("appliances", selected.map((option) => option.value).join("|"))} /></div>{(answers.appliances || "").split("|").includes("other") && <label className="poc-input">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}<p className="poc-intro">You can type to search. Quantities, equipment ratings, and exact connections will be confirmed during the site visit.</p></>}
+        {screen === "appliances" && <><span className="poc-kicker">LPG use</span><h1>What equipment will use LPG?</h1><div className="poc-input"><label htmlFor="lpg-equipment">Add equipment one at a time</label><EquipmentPicker id="lpg-equipment" values={(answers.appliances || "").split("|").filter(Boolean)} onChange={(values) => { set("appliances", values.join("|")); if (!values.includes("other")) setAnswers((current) => ({ ...current, otherEquipment: "" })); }} /></div>{(answers.appliances || "").split("|").includes("other") && <label className="poc-input">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}<p className="poc-intro">You can search and add several items. Quantities, equipment ratings, and exact connections will be confirmed during the site visit.</p></>}
 
         {screen === "location" && <><span className="poc-kicker">Location</span><h1>Where is the project?</h1><div className="poc-two"><div className="poc-input"><label htmlFor="project-city">City / municipality</label><Select<LocationOption> inputId="project-city" instanceId="project-city-select" classNamePrefix="equipment-select" isSearchable placeholder="Search city or municipality..." noOptionsMessage={() => "No matching city or municipality"} options={municipalityOptions} value={municipalityOptions.find((option) => option.value === answers.cityCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, cityCode: selected?.value ?? "", city: selected?.name ?? "", barangayCode: "", area: "" })); setError(""); }} /></div><div className="poc-input"><label htmlFor="project-barangay">Barangay</label><Select<LocationOption> inputId="project-barangay" instanceId="project-barangay-select" classNamePrefix="equipment-select" isSearchable isDisabled={!answers.cityCode} placeholder={answers.cityCode ? "Search barangay..." : "Select a city first"} noOptionsMessage={() => "No matching barangay"} options={barangayOptions} value={barangayOptions.find((option) => option.value === answers.barangayCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, barangayCode: selected?.value ?? "", area: selected?.name ?? "" })); setError(""); }} /></div></div><label className="poc-input">Street, subdivision, or building<input autoComplete="address-line1" value={answers.streetAddress || ""} onChange={(event) => set("streetAddress", event.target.value)} placeholder="Example: Mabini Street or Sunrise Subdivision" /></label><label className="poc-input">House or unit number (Optional)<input autoComplete="address-line2" value={answers.houseNumber || ""} onChange={(event) => set("houseNumber", event.target.value)} placeholder="Example: House 24 or Unit 3B" /></label><p className="poc-intro">Start typing to quickly find the project location.</p></>}
 
