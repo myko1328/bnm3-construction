@@ -70,6 +70,16 @@ const choices = {
   ],
 };
 
+function parseEquipmentQuantities(value?: string): Record<string, number> {
+  if (!value) return {};
+  try {
+    const parsed = JSON.parse(value) as Record<string, number>;
+    return Object.fromEntries(Object.entries(parsed).map(([key, quantity]) => [key, Math.max(1, Number(quantity) || 1)]));
+  } catch {
+    return {};
+  }
+}
+
 function ChoiceGroup({ name, label, value, options, onChange }: { name: string; label: string; value?: string; options: Choice[]; onChange: (value: string) => void }) {
   return (
     <fieldset className="poc-fieldset">
@@ -86,7 +96,7 @@ function ChoiceGroup({ name, label, value, options, onChange }: { name: string; 
   );
 }
 
-function EquipmentPicker({ id, values, onChange }: { id: string; values: string[]; onChange: (values: string[]) => void }) {
+function EquipmentPicker({ id, values, quantities, onChange }: { id: string; values: string[]; quantities: Record<string, number>; onChange: (values: string[], quantities: Record<string, number>) => void }) {
   const availableOptions = equipmentOptions.filter((option) => !values.includes(option.value));
   const selectedOptions = values.map((value) => equipmentOptions.find((option) => option.value === value)).filter((option): option is EquipmentOption => Boolean(option));
 
@@ -101,11 +111,14 @@ function EquipmentPicker({ id, values, onChange }: { id: string; values: string[
         noOptionsMessage={() => "All matching equipment is already selected"}
         options={availableOptions}
         value={null}
-        onChange={(selected: SingleValue<EquipmentOption>) => selected && onChange([...values, selected.value])}
+        onChange={(selected: SingleValue<EquipmentOption>) => selected && onChange([...values, selected.value], { ...quantities, [selected.value]: quantities[selected.value] || 1 })}
       />
       {selectedOptions.length > 0 && <div className="selected-equipment" aria-label="Selected LPG equipment">
         <span>Selected equipment</span>
-        <ul>{selectedOptions.map((option) => <li key={option.value}><strong>{option.label}</strong><button type="button" aria-label={`Remove ${option.label}`} onClick={() => onChange(values.filter((value) => value !== option.value))}>Remove</button></li>)}</ul>
+        <ul>{selectedOptions.map((option) => {
+          const quantity = quantities[option.value] || 1;
+          return <li key={option.value}><strong>{option.label}</strong><div className="equipment-row-actions"><div className="equipment-quantity" aria-label={`Quantity for ${option.label}`}><button type="button" aria-label={`Decrease ${option.label} quantity`} disabled={quantity <= 1} onClick={() => onChange(values, { ...quantities, [option.value]: Math.max(1, quantity - 1) })}>−</button><span aria-live="polite">{quantity}</span><button type="button" aria-label={`Increase ${option.label} quantity`} onClick={() => onChange(values, { ...quantities, [option.value]: Math.min(20, quantity + 1) })}>+</button></div><button className="equipment-remove" type="button" aria-label={`Remove ${option.label}`} onClick={() => { const nextQuantities = { ...quantities }; delete nextQuantities[option.value]; onChange(values.filter((value) => value !== option.value), nextQuantities); }}>Remove</button></div></li>;
+        })}</ul>
       </div>}
     </>
   );
@@ -120,6 +133,7 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
   const [estimateSaved, setEstimateSaved] = useState(false);
   const [estimate, setEstimate] = useState<EstimateConfig>({ pipeLength: "6to10", points: "1", floors: "1", route: "exposed", protection: "none" });
   const [error, setError] = useState("");
+  const equipmentQuantities = useMemo(() => parseEquipmentQuantities(answers.equipmentQuantities), [answers.equipmentQuantities]);
   const municipalityOptions = useMemo<LocationOption[]>(() => getAllMunicipalities().filter((municipality) => SERVICE_CITY_CODES.has(municipality.psgcCode)).map((municipality) => {
     const province = getProvinceByCode(municipality.provinceCode);
     return {
@@ -210,8 +224,9 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
   const peso = (value: number) => new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP", maximumFractionDigits: 0 }).format(value);
 
   const openEstimator = () => {
-    const selectedEquipment = (answers.appliances || "").split("|").filter(Boolean).length;
-    setEstimate((current) => ({ ...current, points: String(Math.max(1, selectedEquipment)) }));
+    const selectedValues = (answers.appliances || "").split("|").filter(Boolean);
+    const connectionPoints = selectedValues.reduce((total, value) => total + (equipmentQuantities[value] || 1), 0);
+    setEstimate((current) => ({ ...current, points: String(Math.max(1, connectionPoints)) }));
     setShowEstimator(true);
     setEstimateSaved(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -270,7 +285,10 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
   if (!ready) return null;
 
   if (showEstimator) {
-    const selectedEquipment = (answers.appliances || "").split("|").map((value) => equipmentOptions.find((item) => item.value === value)?.label).filter(Boolean);
+    const selectedEquipment = (answers.appliances || "").split("|").filter(Boolean).map((value) => {
+      const label = equipmentOptions.find((item) => item.value === value)?.label;
+      return label ? `${label} × ${equipmentQuantities[value] || 1}` : undefined;
+    }).filter(Boolean);
     return (
       <main className="poc-shell estimator-shell">
         <header className="poc-header">
@@ -288,13 +306,8 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
           <aside className="estimator-controls" aria-label="Estimate configuration">
             <div className="estimator-section"><span>{startWithEstimator ? "Start your configuration" : "Included from your request"}</span><strong>{selectedEquipment.length ? selectedEquipment.join(", ") : "Select the equipment that will use LPG."}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</strong></div>
 
-            <div className="estimator-field"><label htmlFor="estimator-equipment">Add LPG equipment</label><EquipmentPicker id={startWithEstimator ? "direct-estimator-equipment" : "lead-estimator-equipment"} values={(answers.appliances || "").split("|").filter(Boolean)} onChange={(values) => { setAnswers((current) => ({ ...current, appliances: values.join("|"), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setEstimate((current) => ({ ...current, points: String(Math.max(1, values.length)) })); }} /></div>
+            <div className="estimator-field"><label htmlFor="estimator-equipment">Add LPG equipment</label><EquipmentPicker id={startWithEstimator ? "direct-estimator-equipment" : "lead-estimator-equipment"} values={(answers.appliances || "").split("|").filter(Boolean)} quantities={equipmentQuantities} onChange={(values, quantities) => { const points = values.reduce((total, value) => total + (quantities[value] || 1), 0); setAnswers((current) => ({ ...current, appliances: values.join("|"), equipmentQuantities: JSON.stringify(quantities), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setEstimate((current) => ({ ...current, points: String(Math.max(1, points)) })); }} /></div>
             {(answers.appliances || "").split("|").includes("other") && <label className="estimator-field">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}
-
-            <label className="estimator-field">Appliance connection points
-              <input type="number" min="1" max="20" value={estimate.points} onChange={(event) => setEstimate((current) => ({ ...current, points: event.target.value }))} />
-              <small>Usually one point per connected appliance.</small>
-            </label>
 
             <label className="estimator-field">Approximate pipe length
               <select value={estimate.pipeLength} onChange={(event) => setEstimate((current) => ({ ...current, pipeLength: event.target.value }))}>
@@ -350,7 +363,7 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
           <dl className="result-grid">
             <div><dt>Requested work</dt><dd>{choices.work.find((item) => item.value === answers.work)?.label}</dd></div>
             <div><dt>Property</dt><dd>{choices.property.find((item) => item.value === answers.property)?.label}</dd></div>
-            <div><dt>LPG use</dt><dd>{answers.appliances?.split("|").map((value) => equipmentOptions.find((item) => item.value === value)?.label).filter(Boolean).join(", ")}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</dd></div>
+            <div><dt>LPG use</dt><dd>{answers.appliances?.split("|").map((value) => { const label = equipmentOptions.find((item) => item.value === value)?.label; return label ? `${label} × ${equipmentQuantities[value] || 1}` : undefined; }).filter(Boolean).join(", ")}{answers.otherEquipment ? ` — ${answers.otherEquipment}` : ""}</dd></div>
             <div><dt>Project address</dt><dd>{[answers.houseNumber, answers.streetAddress, answers.area, answers.city].filter(Boolean).join(", ")}</dd></div>
           </dl>
           <div className="result-next"><h2>What happens next?</h2><p>A BNM3 representative will call to review the request, ask any necessary follow-up questions, and arrange a site visit with you when needed.</p></div>
@@ -387,7 +400,7 @@ export default function LpgAssessment({ startWithEstimator = false }: { startWit
 
         {screen === "access" && <><span className="poc-kicker">One follow-up</span><h1>Can LPG work be approved and accessed at the property?</h1><p className="poc-intro">Some buildings require administration approval or have work-hour restrictions.</p><ChoiceGroup name="accessApproval" label="Is approval or site access already available?" value={answers.accessApproval} options={choices.yesNoUnsure} onChange={(value) => set("accessApproval", value)} /></>}
 
-        {screen === "appliances" && <><span className="poc-kicker">LPG use</span><h1>What equipment will use LPG?</h1><div className="poc-input"><label htmlFor="lpg-equipment">Add equipment one at a time</label><EquipmentPicker id="lpg-equipment" values={(answers.appliances || "").split("|").filter(Boolean)} onChange={(values) => { set("appliances", values.join("|")); if (!values.includes("other")) setAnswers((current) => ({ ...current, otherEquipment: "" })); }} /></div>{(answers.appliances || "").split("|").includes("other") && <label className="poc-input">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}<p className="poc-intro">You can search and add several items. Quantities, equipment ratings, and exact connections will be confirmed during the site visit.</p></>}
+        {screen === "appliances" && <><span className="poc-kicker">LPG use</span><h1>What equipment will use LPG?</h1><div className="poc-input"><label htmlFor="lpg-equipment">Add equipment one at a time</label><EquipmentPicker id="lpg-equipment" values={(answers.appliances || "").split("|").filter(Boolean)} quantities={equipmentQuantities} onChange={(values, quantities) => { setAnswers((current) => ({ ...current, appliances: values.join("|"), equipmentQuantities: JSON.stringify(quantities), ...(values.includes("other") ? {} : { otherEquipment: "" }) })); setError(""); }} /></div>{(answers.appliances || "").split("|").includes("other") && <label className="poc-input">Describe the other equipment<input value={answers.otherEquipment || ""} onChange={(event) => set("otherEquipment", event.target.value)} placeholder="Example: custom roasting machine" /></label>}<p className="poc-intro">Add each equipment type, then set its quantity. Ratings and exact connections will be confirmed during the site visit.</p></>}
 
         {screen === "location" && <><span className="poc-kicker">Location</span><h1>Where is the project?</h1><div className="poc-two"><div className="poc-input"><label htmlFor="project-city">City / municipality</label><Select<LocationOption> inputId="project-city" instanceId="project-city-select" classNamePrefix="equipment-select" isSearchable placeholder="Search city or municipality..." noOptionsMessage={() => "No matching city or municipality"} options={municipalityOptions} value={municipalityOptions.find((option) => option.value === answers.cityCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, cityCode: selected?.value ?? "", city: selected?.name ?? "", barangayCode: "", area: "" })); setError(""); }} /></div><div className="poc-input"><label htmlFor="project-barangay">Barangay</label><Select<LocationOption> inputId="project-barangay" instanceId="project-barangay-select" classNamePrefix="equipment-select" isSearchable isDisabled={!answers.cityCode} placeholder={answers.cityCode ? "Search barangay..." : "Select a city first"} noOptionsMessage={() => "No matching barangay"} options={barangayOptions} value={barangayOptions.find((option) => option.value === answers.barangayCode) ?? null} onChange={(selected: SingleValue<LocationOption>) => { setAnswers((current) => ({ ...current, barangayCode: selected?.value ?? "", area: selected?.name ?? "" })); setError(""); }} /></div></div><label className="poc-input">Street, subdivision, or building<input autoComplete="address-line1" value={answers.streetAddress || ""} onChange={(event) => set("streetAddress", event.target.value)} placeholder="Example: Mabini Street or Sunrise Subdivision" /></label><label className="poc-input">House or unit number (Optional)<input autoComplete="address-line2" value={answers.houseNumber || ""} onChange={(event) => set("houseNumber", event.target.value)} placeholder="Example: House 24 or Unit 3B" /></label><p className="poc-intro">Start typing to quickly find the project location.</p></>}
 
