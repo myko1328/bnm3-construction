@@ -1,36 +1,214 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BNM3 Construction
 
-## Getting Started
+BNM3 Construction is a pnpm monorepo containing a Next.js frontend and a TypeScript API backed by Neon PostgreSQL.
 
-First, run the development server:
+## Project structure
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+bnm3-construction/
+├── frontend/    Next.js website, assessment, estimator, and dashboard
+├── backend/     Fastify API, Drizzle ORM, and lead qualification
+├── docs/        Project documentation
+└── package.json Workspace commands
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Install the following before running the project:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Node.js 20 or newer
+- pnpm 11
+- A Neon PostgreSQL project
 
-## Learn More
+The expected pnpm version is declared in the root `package.json`. If pnpm is unavailable, enable Corepack and install it:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+corepack enable
+corepack prepare pnpm@11.25.0 --activate
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 1. Install dependencies
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run this command from the repository root:
 
-## Deploy on Vercel
+```bash
+pnpm install
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Pnpm may keep shared packages in the root `node_modules` directory. This is expected in a workspace and all `node_modules` directories are ignored by Git.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 2. Configure Neon
+
+Create a Neon project and copy its pooled PostgreSQL connection string. The URL normally ends with `sslmode=require`.
+
+Create the backend environment file in PowerShell:
+
+```powershell
+Copy-Item backend/.env.example backend/.env
+```
+
+For Bash, macOS, or Linux:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Open `backend/.env` and replace the example value:
+
+```env
+DATABASE_URL=postgresql://user:password@your-neon-host/neondb?sslmode=require
+PORT=4000
+HOST=0.0.0.0
+CORS_ORIGIN=http://localhost:3000
+NODE_ENV=development
+```
+
+Do not commit `backend/.env`. Only `.env.example` should be tracked.
+
+## 3. Configure the frontend
+
+Create the frontend environment file:
+
+```powershell
+Copy-Item frontend/.env.example frontend/.env.local
+```
+
+For Bash, macOS, or Linux:
+
+```bash
+cp frontend/.env.example frontend/.env.local
+```
+
+The local configuration should contain:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+## 4. Apply the database migration
+
+The initial migration is already included in `backend/drizzle`. Apply it to your Neon database:
+
+```bash
+pnpm --filter backend db:migrate
+```
+
+When the database schema changes later, generate and apply another migration:
+
+```bash
+pnpm --filter backend db:generate
+pnpm --filter backend db:migrate
+```
+
+You can inspect the database using Drizzle Studio:
+
+```bash
+pnpm --filter backend db:studio
+```
+
+## 5. Run the project
+
+Start the frontend and backend together from the repository root:
+
+```bash
+pnpm dev
+```
+
+Local addresses:
+
+- Frontend: `http://localhost:3000`
+- Backend: `http://localhost:4000`
+- Backend health check: `http://localhost:4000/health`
+- Database readiness check: `http://localhost:4000/ready`
+
+Stop the development servers with `Ctrl+C`.
+
+### Run applications separately
+
+Use two terminals if you prefer separate logs:
+
+```bash
+pnpm dev:frontend
+```
+
+```bash
+pnpm dev:backend
+```
+
+## Available commands
+
+Run these from the repository root:
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm dev` | Run the frontend and backend concurrently |
+| `pnpm dev:frontend` | Run only the Next.js frontend |
+| `pnpm dev:backend` | Run only the Fastify backend |
+| `pnpm build` | Build both applications for production |
+| `pnpm lint` | Run frontend linting and backend TypeScript validation |
+| `pnpm typecheck` | Type-check both applications |
+
+Backend database commands:
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm --filter backend db:generate` | Generate a migration after a schema change |
+| `pnpm --filter backend db:migrate` | Apply pending migrations to Neon |
+| `pnpm --filter backend db:studio` | Open Drizzle Studio |
+
+## Production build
+
+Build both applications:
+
+```bash
+pnpm build
+```
+
+Start the compiled backend:
+
+```bash
+pnpm --filter backend start
+```
+
+Start the production Next.js server after building:
+
+```bash
+pnpm --filter frontend start
+```
+
+When deploying the frontend separately, configure the deployment project root as `frontend`. Configure the backend host with the variables from `backend/.env.example` and set `CORS_ORIGIN` to the deployed frontend URL.
+
+## Backend endpoints
+
+| Method | Endpoint | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Confirm that the API process is running |
+| `GET` | `/ready` | Confirm that the API can reach Neon |
+| `POST` | `/api/v1/leads` | Create and preliminarily classify a lead |
+| `GET` | `/api/v1/leads` | List leads, optionally filtered by status or source |
+| `GET` | `/api/v1/leads/:id` | Retrieve a lead and its activity history |
+| `PATCH` | `/api/v1/leads/:id/status` | Update a lead status and append an activity |
+
+## Troubleshooting
+
+### Backend reports invalid environment configuration
+
+Confirm that `backend/.env` exists and contains a valid `DATABASE_URL` beginning with `postgresql://`.
+
+### `/health` works but `/ready` returns 503
+
+The API is running, but it cannot reach Neon. Check the database URL, password, Neon project status, and network connection.
+
+### Browser reports a CORS error
+
+Set `CORS_ORIGIN` in `backend/.env` to the exact frontend origin. For local development, use `http://localhost:3000`.
+
+### Dependencies appear missing
+
+Run the installation command again from the repository root:
+
+```bash
+pnpm install
+```
+
+Automated lead classifications provide preliminary operational guidance only. Qualified personnel remain responsible for technical feasibility and LPG safety decisions.
