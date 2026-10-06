@@ -7,7 +7,7 @@ BNM3 Construction is a pnpm monorepo containing a Next.js frontend and a TypeScr
 ```text
 bnm3-construction/
 ├── frontend/    Next.js website, assessment, estimator, and dashboard
-├── backend/     Fastify API, Drizzle ORM, and lead qualification
+├── backend/     Express API, Cloudflare Worker entrypoint, Drizzle ORM, and lead qualification
 ├── docs/        Project documentation
 └── package.json Workspace commands
 ```
@@ -64,6 +64,10 @@ NODE_ENV=development
 ```
 
 Do not commit `backend/.env`. Only `.env.example` should be tracked.
+
+### Development and production databases
+
+Use a dedicated Neon development branch or development project for local work. Production deployment credentials should be configured only in the backend hosting environment and should point to a separate production branch or project. Never place the production connection string in a local committed file, the frontend environment, or any `NEXT_PUBLIC_` variable.
 
 ## 3. Configure the frontend
 
@@ -143,7 +147,7 @@ Run these from the repository root:
 | --- | --- |
 | `pnpm dev` | Run the frontend and backend concurrently |
 | `pnpm dev:frontend` | Run only the Next.js frontend |
-| `pnpm dev:backend` | Run only the Fastify backend |
+| `pnpm dev:backend` | Run only the Express backend on Node.js |
 | `pnpm build` | Build both applications for production |
 | `pnpm lint` | Run frontend linting and backend TypeScript validation |
 | `pnpm typecheck` | Type-check both applications |
@@ -155,6 +159,14 @@ Backend database commands:
 | `pnpm --filter backend db:generate` | Generate a migration after a schema change |
 | `pnpm --filter backend db:migrate` | Apply pending migrations to Neon |
 | `pnpm --filter backend db:studio` | Open Drizzle Studio |
+
+Cloudflare backend commands:
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm --filter backend dev:worker` | Run the Express API in the local Workers runtime |
+| `pnpm --filter backend cf-typegen` | Regenerate Cloudflare runtime and binding types |
+| `pnpm --filter backend deploy` | Deploy the backend Worker |
 
 ## Production build
 
@@ -176,7 +188,9 @@ Start the production Next.js server after building:
 pnpm --filter frontend start
 ```
 
-When deploying the frontend separately, configure the deployment project root as `frontend`. Configure the backend host with the variables from `backend/.env.example` and set `CORS_ORIGIN` to the deployed frontend URL.
+When deploying the frontend separately, configure its deployment project root as `frontend`.
+
+For the backend, create a separate Cloudflare Worker and configure its build root as `backend` and its deploy command as `pnpm deploy`. Before deploying, configure `DATABASE_URL` as an encrypted Worker secret and `CORS_ORIGIN` as a Worker variable containing the exact deployed frontend origin. The Worker name must match `bnm3-backend` from `backend/wrangler.jsonc`.
 
 ## Backend endpoints
 

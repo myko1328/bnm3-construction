@@ -1,37 +1,46 @@
-import cors from "@fastify/cors";
-import Fastify, { type FastifyError } from "fastify";
+import cors from "cors";
 import { sql } from "drizzle-orm";
+import express, { type ErrorRequestHandler, type Express } from "express";
 import { env } from "./config/env.js";
 import { db } from "./db/client.js";
-import { leadRoutes } from "./modules/leads/lead.routes.js";
+import { leadRouter } from "./modules/leads/lead.routes.js";
 
-export function buildApp() {
-  const app = Fastify({ logger: true });
+export function buildApp(): Express {
+  const app = express();
 
-  app.register(cors, {
+  app.disable("x-powered-by");
+  app.use(cors({
     origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
     methods: ["GET", "POST", "PATCH", "OPTIONS"],
+  }));
+  app.use(express.json());
+
+  app.get("/health", (_request, response) => {
+    response.json({ status: "ok", service: "bnm3-backend" });
   });
 
-  app.get("/health", async () => ({ status: "ok", service: "bnm3-backend" }));
-  app.get("/ready", async (_request, reply) => {
+  app.get("/ready", async (_request, response) => {
     try {
       await db.execute(sql`select 1`);
-      return { status: "ready", database: "connected" };
+      response.json({ status: "ready", database: "connected" });
     } catch (error) {
-      app.log.error(error);
-      return reply.code(503).send({ status: "not_ready", database: "unavailable" });
+      console.error(error);
+      response.status(503).json({ status: "not_ready", database: "unavailable" });
     }
   });
 
-  app.register(leadRoutes, { prefix: "/api/v1/leads" });
+  app.use("/api/v1/leads", leadRouter);
 
-  app.setErrorHandler((error: FastifyError, _request, reply) => {
-    app.log.error(error);
-    reply.code(error.statusCode ?? 500).send({
-      error: error.statusCode && error.statusCode < 500 ? error.message : "Internal server error",
+  const errorHandler: ErrorRequestHandler = (error, _request, response, _next) => {
+    console.error(error);
+    const statusCode = typeof error.status === "number" ? error.status : 500;
+
+    response.status(statusCode).json({
+      error: statusCode < 500 ? error.message : "Internal server error",
     });
-  });
+  };
+
+  app.use(errorHandler);
 
   return app;
 }
