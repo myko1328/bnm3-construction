@@ -5,6 +5,83 @@ export type LeadClassification =
   | "outside_service_area"
   | "priority_review";
 
+export type LeadSource = "assessment" | "estimator" | "manual";
+
+export type LeadStatus =
+  | "new"
+  | "assigned"
+  | "contact_attempted"
+  | "customer_contacted"
+  | "needs_clarification"
+  | "site_inspection_recommended"
+  | "inspection_scheduled"
+  | "ready_for_quotation"
+  | "converted"
+  | "closed";
+
+export type EstimateSnapshot = {
+  currency: "PHP";
+  minimum: number;
+  maximum: number;
+  assumptions?: string[];
+};
+
+export type LeadActivity = {
+  id: string;
+  activityType: string;
+  message: string;
+  actorName: string | null;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+};
+
+export type StoredCallRecord = {
+  id: string;
+  leadId: string;
+  checks: Record<string, boolean>;
+  comments: Record<string, string>;
+  callSummary: string;
+  updatedBy: string;
+  finalizedAt: string | null;
+  finalizedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SaveCallRecordInput = {
+  checks: Record<string, boolean>;
+  comments: Record<string, string>;
+  callSummary: string;
+  actorName: string;
+};
+
+export type StoredLead = {
+  id: string;
+  referenceCode: string;
+  source: LeadSource;
+  status: LeadStatus;
+  classification: LeadClassification;
+  qualificationScore: number;
+  classificationReasons: string[];
+  customerName: string;
+  phone: string;
+  email: string | null;
+  service: string;
+  cityMunicipality: string;
+  barangay: string;
+  addressLine: string | null;
+  houseUnitNumber: string | null;
+  answers: Record<string, unknown>;
+  estimate: EstimateSnapshot | null;
+  missingQuestions: string[];
+  inspectionTriggers: string[];
+  assignedTo: string | null;
+  consentedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  activities?: LeadActivity[];
+};
+
 type BaseLeadInput = {
   source: "assessment" | "estimator";
   customer: {
@@ -53,6 +130,8 @@ export type CreatedLead = {
 };
 
 type LeadResponse = { data: CreatedLead };
+type LeadListResponse = { data: StoredLead[] };
+type LeadDetailResponse = { data: StoredLead };
 
 export class LeadApiError extends Error {
   constructor(message: string, public readonly status?: number) {
@@ -63,14 +142,28 @@ export class LeadApiError extends Error {
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-async function createLead(input: AssessmentLeadInput | EstimatorLeadInput): Promise<CreatedLead> {
-  if (!apiUrl) {
-    throw new LeadApiError("The assessment service is not configured. Please contact BNM3 directly.");
-  }
+function getApiUrl() {
+  if (!apiUrl) throw new LeadApiError("The lead service is not configured. Please contact the system administrator.");
+  return apiUrl.replace(/\/$/, "");
+}
 
+async function readApiResponse<T>(response: Response, fallbackMessage: string): Promise<T> {
+  const payload = await response.json().catch(() => null) as T | { error?: string } | null;
+  if (!response.ok) {
+    const message = payload && typeof payload === "object" && "error" in payload && payload.error
+      ? payload.error
+      : fallbackMessage;
+    throw new LeadApiError(message, response.status);
+  }
+  if (!payload) throw new LeadApiError("The lead service returned an empty response.");
+  return payload as T;
+}
+
+async function createLead(input: AssessmentLeadInput | EstimatorLeadInput): Promise<CreatedLead> {
+  const baseUrl = getApiUrl();
   let response: Response;
   try {
-    response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/v1/leads`, {
+    response = await fetch(`${baseUrl}/api/v1/leads`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -91,6 +184,61 @@ async function createLead(input: AssessmentLeadInput | EstimatorLeadInput): Prom
     throw new LeadApiError("The assessment service returned an incomplete confirmation. Please contact BNM3 before submitting again.");
   }
 
+  return payload.data;
+}
+
+export async function getLeads(options: { status?: LeadStatus; source?: LeadSource; limit?: number; signal?: AbortSignal } = {}) {
+  const query = new URLSearchParams();
+  if (options.status) query.set("status", options.status);
+  if (options.source) query.set("source", options.source);
+  query.set("limit", String(options.limit ?? 100));
+
+  const baseUrl = getApiUrl();
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/api/v1/leads?${query.toString()}`, { signal: options.signal, cache: "no-store" });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    throw new LeadApiError("We could not load leads from the BNM3 service. Check the connection and try again.");
+  }
+  const payload = await readApiResponse<LeadListResponse>(response, "We could not load the lead inbox.");
+  return payload.data;
+}
+
+export async function getLeadById(id: string, signal?: AbortSignal) {
+  const baseUrl = getApiUrl();
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl}/api/v1/leads/${encodeURIComponent(id)}`, { signal, cache: "no-store" });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    throw new LeadApiError("We could not load this lead from the BNM3 service. Check the connection and try again.");
+  }
+  const payload = await readApiResponse<LeadDetailResponse>(response, "We could not load this lead record.");
+  return payload.data;
+}
+
+export async function getCallRecord(leadId: string, signal?: AbortSignal) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/call-record`, { signal, cache: "no-store" });
+  const payload = await readApiResponse<{ data: StoredCallRecord | null }>(response, "We could not load the call record.");
+  return payload.data;
+}
+
+export async function saveCallRecord(leadId: string, input: SaveCallRecordInput) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/call-record`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: StoredCallRecord }>(response, "We could not save the call record.");
+  return payload.data;
+}
+
+export async function finalizeCallRecord(leadId: string, input: SaveCallRecordInput & { requiredCheckIds: string[]; requiredCommentIds: string[] }) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/call-record/finalize`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: StoredCallRecord }>(response, "We could not finalize the call record.");
+  return payload.data;
+}
+
+export async function addManagerQuestion(leadId: string, question: string, actorName: string) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/manager-questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, actorName }) });
+  const payload = await readApiResponse<{ data: LeadActivity }>(response, "We could not save the manager question.");
   return payload.data;
 }
 

@@ -190,7 +190,7 @@ pnpm --filter frontend start
 
 When deploying the frontend separately, configure its deployment project root as `frontend`.
 
-For the backend, create a separate Cloudflare Worker and configure its build root as `backend` and its deploy command as `pnpm deploy`. Before deploying, configure `DATABASE_URL` as an encrypted Worker secret and `CORS_ORIGIN` as a Worker variable containing the exact deployed frontend origin. The Worker name must match `bnm3-backend` from `backend/wrangler.jsonc`.
+For the backend, create a separate Cloudflare Worker and configure its build root as `backend` and its deploy command as `pnpm deploy`. Before deploying, configure `DATABASE_URL` as an encrypted Worker secret and `CORS_ORIGIN` as a Worker variable containing the exact deployed frontend origin. The Worker name must match `bnm3-construction-be` from `backend/wrangler.jsonc`.
 
 ## Backend endpoints
 

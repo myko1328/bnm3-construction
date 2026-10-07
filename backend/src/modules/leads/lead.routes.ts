@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 import { type SQL, and, desc, eq } from "drizzle-orm";
 import express, { type Router } from "express";
 import { db } from "../../db/client.js";
-import { leadActivities, leads } from "../../db/schema.js";
+import { callRecords, leadActivities, leads } from "../../db/schema.js";
 import { qualifyLead } from "./lead-qualification.js";
-import { createLeadSchema, leadIdParamsSchema, listLeadsQuerySchema, updateLeadStatusSchema } from "./lead.schemas.js";
+import { createLeadSchema, finalizeCallRecordSchema, leadIdParamsSchema, listLeadsQuerySchema, managerQuestionSchema, saveCallRecordSchema, updateLeadStatusSchema } from "./lead.schemas.js";
 
 export const leadRouter: Router = express.Router();
 
@@ -80,6 +80,58 @@ leadRouter.get("/:id", async (request, response) => {
 
   const activities = await db.select().from(leadActivities).where(eq(leadActivities.leadId, lead.id)).orderBy(desc(leadActivities.createdAt));
   response.json({ data: { ...lead, activities } });
+});
+
+leadRouter.get("/:id/call-record", async (request, response) => {
+  const parsed = leadIdParamsSchema.safeParse(request.params);
+  if (!parsed.success) return void response.status(400).json({ error: "Invalid lead ID" });
+  const [lead] = await db.select({ id: leads.id }).from(leads).where(eq(leads.id, parsed.data.id)).limit(1);
+  if (!lead) return void response.status(404).json({ error: "Lead not found" });
+  const [record] = await db.select().from(callRecords).where(eq(callRecords.leadId, lead.id)).limit(1);
+  response.json({ data: record ?? null });
+});
+
+leadRouter.put("/:id/call-record", async (request, response) => {
+  const params = leadIdParamsSchema.safeParse(request.params);
+  const body = saveCallRecordSchema.safeParse(request.body);
+  if (!params.success || !body.success) return void response.status(400).json({ error: "Invalid call record", details: body.success ? undefined : body.error.flatten() });
+  const [lead] = await db.select({ id: leads.id }).from(leads).where(eq(leads.id, params.data.id)).limit(1);
+  if (!lead) return void response.status(404).json({ error: "Lead not found" });
+  const [existing] = await db.select().from(callRecords).where(eq(callRecords.leadId, lead.id)).limit(1);
+  if (existing?.finalizedAt) return void response.status(409).json({ error: "This call record is finalized and cannot be edited." });
+  const now = new Date();
+  const [record] = await db.insert(callRecords).values({ leadId: lead.id, checks: body.data.checks, comments: body.data.comments, callSummary: body.data.callSummary, updatedBy: body.data.actorName, updatedAt: now })
+    .onConflictDoUpdate({ target: callRecords.leadId, set: { checks: body.data.checks, comments: body.data.comments, callSummary: body.data.callSummary, updatedBy: body.data.actorName, updatedAt: now } }).returning();
+  await db.insert(leadActivities).values({ leadId: lead.id, activityType: "call_record_saved", message: "Updated the customer call record.", actorName: body.data.actorName });
+  response.json({ data: record });
+});
+
+leadRouter.post("/:id/call-record/finalize", async (request, response) => {
+  const params = leadIdParamsSchema.safeParse(request.params);
+  const body = finalizeCallRecordSchema.safeParse(request.body);
+  if (!params.success || !body.success) return void response.status(400).json({ error: "Invalid finalized call record", details: body.success ? undefined : body.error.flatten() });
+  const missingChecks = body.data.requiredCheckIds.filter((id) => body.data.checks[id] !== true);
+  const missingComments = body.data.requiredCommentIds.filter((id) => !body.data.comments[id]?.trim());
+  if (missingChecks.length || missingComments.length || !body.data.callSummary.trim()) return void response.status(400).json({ error: "Complete every required call item, customer response, and the call summary before finalizing." });
+  const [lead] = await db.select({ id: leads.id }).from(leads).where(eq(leads.id, params.data.id)).limit(1);
+  if (!lead) return void response.status(404).json({ error: "Lead not found" });
+  const [existing] = await db.select().from(callRecords).where(eq(callRecords.leadId, lead.id)).limit(1);
+  if (existing?.finalizedAt) return void response.status(409).json({ error: "This call record is already finalized." });
+  const now = new Date();
+  const [record] = await db.insert(callRecords).values({ leadId: lead.id, checks: body.data.checks, comments: body.data.comments, callSummary: body.data.callSummary, updatedBy: body.data.actorName, finalizedAt: now, finalizedBy: body.data.actorName, updatedAt: now })
+    .onConflictDoUpdate({ target: callRecords.leadId, set: { checks: body.data.checks, comments: body.data.comments, callSummary: body.data.callSummary, updatedBy: body.data.actorName, finalizedAt: now, finalizedBy: body.data.actorName, updatedAt: now } }).returning();
+  await db.insert(leadActivities).values({ leadId: lead.id, activityType: "call_record_finalized", message: "Finalized the customer call record.", actorName: body.data.actorName });
+  response.json({ data: record });
+});
+
+leadRouter.post("/:id/manager-questions", async (request, response) => {
+  const params = leadIdParamsSchema.safeParse(request.params);
+  const body = managerQuestionSchema.safeParse(request.body);
+  if (!params.success || !body.success) return void response.status(400).json({ error: "Invalid manager question" });
+  const [lead] = await db.select({ id: leads.id }).from(leads).where(eq(leads.id, params.data.id)).limit(1);
+  if (!lead) return void response.status(404).json({ error: "Lead not found" });
+  const [activity] = await db.insert(leadActivities).values({ leadId: lead.id, activityType: "manager_question", message: `Follow-up question: ${body.data.question}`, actorName: body.data.actorName, metadata: { question: body.data.question } }).returning();
+  response.status(201).json({ data: activity });
 });
 
 leadRouter.patch("/:id/status", async (request, response) => {

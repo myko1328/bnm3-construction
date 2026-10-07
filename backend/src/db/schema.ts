@@ -1,4 +1,4 @@
-import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 
 export const leadSourceEnum = pgEnum("lead_source", ["assessment", "estimator", "manual"]);
 export const leadStatusEnum = pgEnum("lead_status", [
@@ -68,6 +68,19 @@ export const leadActivities = pgTable("lead_activities", {
   metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [index("lead_activities_lead_id_idx").on(table.leadId)]);
+
+export const callRecords = pgTable("call_records", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  leadId: uuid("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  checks: jsonb("checks").$type<Record<string, boolean>>().notNull().default({}),
+  comments: jsonb("comments").$type<Record<string, string>>().notNull().default({}),
+  callSummary: text("call_summary").notNull().default(""),
+  updatedBy: varchar("updated_by", { length: 160 }).notNull(),
+  finalizedAt: timestamp("finalized_at", { withTimezone: true }),
+  finalizedBy: varchar("finalized_by", { length: 160 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [uniqueIndex("call_records_lead_id_unique").on(table.leadId)]);
 
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;

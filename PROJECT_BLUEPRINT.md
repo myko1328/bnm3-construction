@@ -138,6 +138,8 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 4 — Dashboard reads live leads
 
+**Status:** Completed. The dashboard loaded three Neon leads in browser verification, filtered assessment and estimator sources correctly, and opened UUID-backed detail pages for `BNM-2026-99BAEA19` and `BNM-2026-D8EE92F5`.
+
 **Goal:** Replace dashboard mock data with Neon records without changing the personnel workflow unnecessarily.
 
 **Deliverables:**
@@ -439,4 +441,4 @@ Milestones 6 through 9. Add notifications, case studies, analytics, geographic e
 
 ## 8. Immediate next step
 
-Complete **Wiring Milestone 4 — Dashboard reads live leads**. Replace the dashboard's mock lead list and detail records with Neon-backed API data while preserving the existing personnel workflow and adding clear loading, empty, error, and retry states.
+Complete **Wiring Milestone 5 — Persistent call record and activity history**. Move personnel checklist results, customer responses, call summaries, manager follow-ups, finalization state, and activity events from browser storage into Neon-backed records that can be reopened from another authorized browser.

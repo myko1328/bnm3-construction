@@ -67,4 +67,24 @@ export const updateLeadStatusSchema = z.object({
   actorName: z.string().trim().min(1).max(160).optional(),
 });
 
+const recordMapSchema = z.record(z.string().min(1).max(120), z.boolean());
+const commentMapSchema = z.record(z.string().min(1).max(120), z.string().max(4000));
+
+export const saveCallRecordSchema = z.object({
+  checks: recordMapSchema,
+  comments: commentMapSchema,
+  callSummary: z.string().max(10000),
+  actorName: z.string().trim().min(1).max(160),
+});
+
+export const finalizeCallRecordSchema = saveCallRecordSchema.extend({
+  requiredCheckIds: z.array(z.string().min(1).max(120)).min(1).max(100),
+  requiredCommentIds: z.array(z.string().min(1).max(120)).min(1).max(100),
+});
+
+export const managerQuestionSchema = z.object({
+  question: z.string().trim().min(1).max(4000),
+  actorName: z.string().trim().min(1).max(160),
+});
+
 export type CreateLeadInput = z.infer<typeof createLeadSchema>;
