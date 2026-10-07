@@ -157,6 +157,8 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 5 — Persistent call record and activity history
 
+**Status:** Completed. Call-record drafts, checklist responses, comments, summaries, finalization state, manager questions, and activity events now persist in Neon. Browser verification confirmed that the draft for `BNM-2026-D8EE92F5` survived a full page reload and restored its checklist progress, comment, summary, and activity history.
+
 **Goal:** Preserve the personnel and management record currently stored only in the browser.
 
 **Deliverables:**
@@ -441,4 +443,4 @@ Milestones 6 through 9. Add notifications, case studies, analytics, geographic e
 
 ## 8. Immediate next step
 
-Complete **Wiring Milestone 5 — Persistent call record and activity history**. Move personnel checklist results, customer responses, call summaries, manager follow-ups, finalization state, and activity events from browser storage into Neon-backed records that can be reopened from another authorized browser.
+Complete **Wiring Milestone 6 — Qualification and site-inspection workflow**. Add controlled status transitions, recorded classification overrides, technical inspection triggers, and internal site-inspection requests while keeping final technical approval with qualified personnel.

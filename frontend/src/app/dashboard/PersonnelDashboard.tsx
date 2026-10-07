@@ -64,7 +64,7 @@ export default function PersonnelDashboard() {
       <aside className="dash-sidebar">
         <Link className="dash-brand" href="/"><Image src="/bnm3-logo.png" alt="BNM3 Construction" width={259} height={188} /><span><strong>BNM3</strong><small>Personnel</small></span></Link>
         <nav aria-label="Dashboard navigation"><a className="active" href="#leads"><span>01</span> Leads</a><a href="#pipeline"><span>02</span> Pipeline</a><a href="#schedule"><span>03</span> Inspections</a><a href="#quotes"><span>04</span> Quotations</a></nav>
-        <div className="dash-poc"><strong>Connected POC</strong><p>Lead data is loaded from Neon. Call records remain browser-only until Milestone 5.</p></div>
+        <div className="dash-poc"><strong>Connected POC</strong><p>Lead and call-record data are loaded from Neon. Staff authentication follows in Milestone 7.</p></div>
         <Link className="dash-site-link" href="/">View public website →</Link>
       </aside>
 
@@ -97,7 +97,7 @@ export default function PersonnelDashboard() {
             <div className="detail-signal-row"><span>{selectedLead.sourceLabel}</span><span>{selectedLead.classificationLabel}</span><strong>{selectedLead.qualificationScore}/100 score</strong></div>
 
             <div className="detail-actions"><label>Status<select value={selectedLead.status} onChange={(event) => { const status = event.target.value as LeadStatus; updateLeadPreview({ status, statusLabel: statusLabel(status) }); }}>{leadStatuses.map((status) => <option value={status} key={status}>{statusLabel(status)}</option>)}</select></label><label>Assigned to<select value={selectedLead.assignee} onChange={(event) => updateLeadPreview({ assignee: event.target.value })}><option>Unassigned</option><option>Assigned personnel</option><option>Ana R.</option><option>Mark T.</option><option>Joel M.</option></select></label></div>
-            <p className="detail-preview-note">Status and assignment controls are workflow previews until Milestone 5 adds persistent staff updates.</p>
+            <p className="detail-preview-note">Status and assignment remain workflow previews until Milestone 6 adds controlled operational updates.</p>
 
             <section className="detail-next"><div><span>Next action</span><strong>{selectedLead.nextAction}</strong><small>{selectedLead.nextActionDate}</small></div><Link className="open-record-link" href={`/dashboard/leads/${selectedLead.id}`}>Open full record →</Link></section>
 
@@ -107,7 +107,7 @@ export default function PersonnelDashboard() {
             </div>
 
             <section className="detail-budget"><div><span>Customer-generated budget</span><strong>{selectedLead.budget}</strong></div><p>Preliminary tool result only. Personnel must validate assumptions before preparing a quotation.</p></section>
-            <section className="detail-notes"><div><h3>Qualification context</h3><span>Generated from submitted answers</span></div><textarea value={selectedLead.notes || "No automatic qualification notes."} readOnly rows={4} /><button type="button" disabled>Persistent notes in Milestone 5</button></section>
+            <section className="detail-notes"><div><h3>Qualification context</h3><span>Generated from submitted answers</span></div><textarea value={selectedLead.notes || "No automatic qualification notes."} readOnly rows={4} /><button type="button" disabled>Workflow updates in Milestone 6</button></section>
           </article> : <div className="lead-detail-placeholder"><strong>{loading ? "Loading lead details…" : loadError ? "Details unavailable" : "Select a lead"}</strong><p>{loading ? "The newest live lead will be selected automatically." : "Choose a lead from the inbox to review its submission."}</p></div>}
         </section>
       </main>

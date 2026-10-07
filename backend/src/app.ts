@@ -11,7 +11,7 @@ export function buildApp(): Express {
   app.disable("x-powered-by");
   app.use(cors({
     origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
-    methods: ["GET", "POST", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "OPTIONS"],
   }));
   app.use(express.json());
 
