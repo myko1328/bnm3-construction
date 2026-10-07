@@ -19,6 +19,10 @@ export type LeadStatus =
   | "converted"
   | "closed";
 
+export type StaffRole = "customer_support" | "technical" | "manager" | "admin";
+export type QualificationDecision = "confirmed" | "overridden";
+export type InspectionRequestStatus = "requested" | "scheduled" | "completed" | "cancelled";
+
 export type EstimateSnapshot = {
   currency: "PHP";
   minimum: number;
@@ -48,6 +52,22 @@ export type StoredCallRecord = {
   updatedAt: string;
 };
 
+export type SiteInspectionRequest = {
+  id: string;
+  leadId: string;
+  status: InspectionRequestStatus;
+  reason: string;
+  inspectionTriggers: string[];
+  preferredDate: string | null;
+  scheduledFor: string | null;
+  assignedTechnicalName: string | null;
+  technicalNotes: string | null;
+  requestedBy: string;
+  requestedByRole: StaffRole;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type SaveCallRecordInput = {
   checks: Record<string, boolean>;
   comments: Record<string, string>;
@@ -61,6 +81,12 @@ export type StoredLead = {
   source: LeadSource;
   status: LeadStatus;
   classification: LeadClassification;
+  reviewedClassification: LeadClassification | null;
+  qualificationDecision: QualificationDecision | null;
+  qualificationReviewReason: string | null;
+  qualificationReviewedBy: string | null;
+  qualificationReviewedAt: string | null;
+  confirmedInspectionTriggers: string[];
   qualificationScore: number;
   classificationReasons: string[];
   customerName: string;
@@ -80,6 +106,7 @@ export type StoredLead = {
   createdAt: string;
   updatedAt: string;
   activities?: LeadActivity[];
+  siteInspectionRequest?: SiteInspectionRequest | null;
 };
 
 type BaseLeadInput = {
@@ -239,6 +266,30 @@ export async function finalizeCallRecord(leadId: string, input: SaveCallRecordIn
 export async function addManagerQuestion(leadId: string, question: string, actorName: string) {
   const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/manager-questions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ question, actorName }) });
   const payload = await readApiResponse<{ data: LeadActivity }>(response, "We could not save the manager question.");
+  return payload.data;
+}
+
+export async function saveQualificationReview(leadId: string, input: { decision: QualificationDecision; classification: LeadClassification; reason: string; inspectionTriggers: string[]; actorName: string; actorRole: StaffRole }) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/qualification`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: StoredLead }>(response, "We could not save the qualification review.");
+  return payload.data;
+}
+
+export async function updateLeadStatus(leadId: string, input: { status: LeadStatus; note: string; actorName: string; actorRole: StaffRole }) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/status`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: StoredLead }>(response, "We could not update the lead status.");
+  return payload.data;
+}
+
+export async function createSiteInspectionRequest(leadId: string, input: { reason: string; inspectionTriggers: string[]; preferredDate?: string; actorName: string; actorRole: StaffRole }) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/site-inspection`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: SiteInspectionRequest }>(response, "We could not create the site-inspection request.");
+  return payload.data;
+}
+
+export async function updateSiteInspectionRequest(leadId: string, input: { status: Exclude<InspectionRequestStatus, "requested">; scheduledFor?: string; assignedTechnicalName?: string; technicalNotes?: string; actorName: string; actorRole: StaffRole }) {
+  const response = await fetch(`${getApiUrl()}/api/v1/leads/${encodeURIComponent(leadId)}/site-inspection`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) });
+  const payload = await readApiResponse<{ data: SiteInspectionRequest }>(response, "We could not update the site-inspection request.");
   return payload.data;
 }
 

@@ -13,6 +13,8 @@ export const leadStatusSchema = z.enum([
   "converted",
   "closed",
 ]);
+export const leadClassificationSchema = z.enum(["qualified", "needs_clarification", "site_inspection_likely", "outside_service_area", "priority_review"]);
+export const staffRoleSchema = z.enum(["customer_support", "technical", "manager", "admin"]);
 
 export const createLeadSchema = z.object({
   source: leadSourceSchema,
@@ -63,8 +65,42 @@ export const listLeadsQuerySchema = z.object({
 export const leadIdParamsSchema = z.object({ id: z.string().uuid() });
 export const updateLeadStatusSchema = z.object({
   status: leadStatusSchema,
-  note: z.string().trim().min(1).max(1000).optional(),
-  actorName: z.string().trim().min(1).max(160).optional(),
+  note: z.string().trim().min(1).max(1000),
+  actorName: z.string().trim().min(1).max(160),
+  actorRole: staffRoleSchema,
+});
+
+export const qualificationReviewSchema = z.object({
+  decision: z.enum(["confirmed", "overridden"]),
+  classification: leadClassificationSchema,
+  reason: z.string().trim().min(10).max(4000),
+  inspectionTriggers: z.array(z.string().trim().min(1).max(160)).max(20),
+  actorName: z.string().trim().min(1).max(160),
+  actorRole: staffRoleSchema,
+});
+
+export const createInspectionRequestSchema = z.object({
+  reason: z.string().trim().min(10).max(4000),
+  inspectionTriggers: z.array(z.string().trim().min(1).max(160)).max(20),
+  preferredDate: z.coerce.date().optional(),
+  actorName: z.string().trim().min(1).max(160),
+  actorRole: staffRoleSchema,
+});
+
+export const updateInspectionRequestSchema = z.object({
+  status: z.enum(["scheduled", "completed", "cancelled"]),
+  scheduledFor: z.coerce.date().optional(),
+  assignedTechnicalName: z.string().trim().min(1).max(160).optional(),
+  technicalNotes: z.string().trim().max(4000).optional(),
+  actorName: z.string().trim().min(1).max(160),
+  actorRole: staffRoleSchema,
+}).superRefine((value, context) => {
+  if (value.status === "scheduled" && (!value.scheduledFor || !value.assignedTechnicalName)) {
+    context.addIssue({ code: "custom", message: "A schedule and assigned technical person are required.", path: ["scheduledFor"] });
+  }
+  if (value.status === "completed" && !value.technicalNotes) {
+    context.addIssue({ code: "custom", message: "Technical completion notes are required.", path: ["technicalNotes"] });
+  }
 });
 
 const recordMapSchema = z.record(z.string().min(1).max(120), z.boolean());

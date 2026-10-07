@@ -20,6 +20,12 @@ export type DashboardLead = {
   sourceLabel: string;
   classification: LeadClassification;
   classificationLabel: string;
+  preliminaryClassification: LeadClassification;
+  preliminaryClassificationLabel: string;
+  qualificationDecision: "confirmed" | "overridden" | null;
+  qualificationReviewReason: string;
+  qualificationReviewedBy: string;
+  qualificationReviewedAt: string;
   qualificationScore: number;
   classificationReasons: string[];
   assignee: string;
@@ -31,6 +37,7 @@ export type DashboardLead = {
   notes: string;
   missingQuestions: string[];
   inspectionTriggers: string[];
+  preliminaryInspectionTriggers: string[];
   estimateAssumptions: string[];
   activities: Array<{ id: string; author: string; message: string; time: string }>;
 };
@@ -166,7 +173,8 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
   const address = [lead.houseUnitNumber, lead.addressLine, lead.barangay && `Brgy. ${lead.barangay}`, lead.cityMunicipality].filter(Boolean).join(", ");
   const equipment = readEquipment(lead.answers);
   const propertyCode = stringValue(lead.answers.propertyType);
-  const highPriority = ["priority_review", "site_inspection_likely"].includes(lead.classification);
+  const effectiveClassification = lead.reviewedClassification ?? lead.classification;
+  const highPriority = ["priority_review", "site_inspection_likely"].includes(effectiveClassification);
 
   return {
     id: lead.id,
@@ -184,8 +192,14 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
     priority: highPriority ? "High" : "Normal",
     source: lead.source,
     sourceLabel: SOURCE_LABELS[lead.source],
-    classification: lead.classification,
-    classificationLabel: CLASSIFICATION_LABELS[lead.classification],
+    classification: effectiveClassification,
+    classificationLabel: CLASSIFICATION_LABELS[effectiveClassification],
+    preliminaryClassification: lead.classification,
+    preliminaryClassificationLabel: CLASSIFICATION_LABELS[lead.classification],
+    qualificationDecision: lead.qualificationDecision,
+    qualificationReviewReason: lead.qualificationReviewReason ?? "",
+    qualificationReviewedBy: lead.qualificationReviewedBy ?? "",
+    qualificationReviewedAt: lead.qualificationReviewedAt ? formatDate(lead.qualificationReviewedAt, { dateStyle: "medium", timeStyle: "short" }) : "",
     qualificationScore: lead.qualificationScore,
     classificationReasons: lead.classificationReasons,
     assignee: lead.assignedTo ? "Assigned personnel" : "Unassigned",
@@ -196,7 +210,8 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
     nextActionDate: "Schedule during customer follow-up",
     notes: lead.classificationReasons.join(" "),
     missingQuestions: lead.missingQuestions,
-    inspectionTriggers: lead.inspectionTriggers,
+    inspectionTriggers: lead.confirmedInspectionTriggers.length ? lead.confirmedInspectionTriggers : lead.inspectionTriggers,
+    preliminaryInspectionTriggers: lead.inspectionTriggers,
     estimateAssumptions: lead.estimate?.assumptions ?? [],
     activities: (lead.activities ?? []).map((activity) => ({
       id: activity.id,

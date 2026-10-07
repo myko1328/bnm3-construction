@@ -49,10 +49,6 @@ export default function PersonnelDashboard() {
   }), [leads, query, sourceFilter, statusFilter]);
 
   const selectedLead = leads.find((lead) => lead.id === selectedId) ?? filteredLeads[0] ?? leads[0];
-  const updateLeadPreview = (changes: Partial<DashboardLead>) => {
-    if (!selectedLead) return;
-    setLeads((current) => current.map((lead) => lead.id === selectedLead.id ? { ...lead, ...changes } : lead));
-  };
   const retry = () => {
     setLoading(true);
     setLoadError("");
@@ -96,8 +92,8 @@ export default function PersonnelDashboard() {
             <header className="detail-header"><div><span>{selectedLead.referenceCode}</span><h2>{selectedLead.name}</h2><p>{selectedLead.service} · {selectedLead.city}</p></div><span className={`detail-priority priority-${selectedLead.priority.toLowerCase()}`}>{selectedLead.priority} priority</span></header>
             <div className="detail-signal-row"><span>{selectedLead.sourceLabel}</span><span>{selectedLead.classificationLabel}</span><strong>{selectedLead.qualificationScore}/100 score</strong></div>
 
-            <div className="detail-actions"><label>Status<select value={selectedLead.status} onChange={(event) => { const status = event.target.value as LeadStatus; updateLeadPreview({ status, statusLabel: statusLabel(status) }); }}>{leadStatuses.map((status) => <option value={status} key={status}>{statusLabel(status)}</option>)}</select></label><label>Assigned to<select value={selectedLead.assignee} onChange={(event) => updateLeadPreview({ assignee: event.target.value })}><option>Unassigned</option><option>Assigned personnel</option><option>Ana R.</option><option>Mark T.</option><option>Joel M.</option></select></label></div>
-            <p className="detail-preview-note">Status and assignment remain workflow previews until Milestone 6 adds controlled operational updates.</p>
+            <div className="detail-actions"><label>Status<select value={selectedLead.status} disabled>{leadStatuses.map((status) => <option value={status} key={status}>{statusLabel(status)}</option>)}</select></label><label>Assigned to<select value={selectedLead.assignee} disabled><option>Unassigned</option><option>Assigned personnel</option></select></label></div>
+            <p className="detail-preview-note">Open the full record to make a reasoned, audit-tracked workflow change.</p>
 
             <section className="detail-next"><div><span>Next action</span><strong>{selectedLead.nextAction}</strong><small>{selectedLead.nextActionDate}</small></div><Link className="open-record-link" href={`/dashboard/leads/${selectedLead.id}`}>Open full record →</Link></section>
 
@@ -107,7 +103,7 @@ export default function PersonnelDashboard() {
             </div>
 
             <section className="detail-budget"><div><span>Customer-generated budget</span><strong>{selectedLead.budget}</strong></div><p>Preliminary tool result only. Personnel must validate assumptions before preparing a quotation.</p></section>
-            <section className="detail-notes"><div><h3>Qualification context</h3><span>Generated from submitted answers</span></div><textarea value={selectedLead.notes || "No automatic qualification notes."} readOnly rows={4} /><button type="button" disabled>Workflow updates in Milestone 6</button></section>
+            <section className="detail-notes"><div><h3>Qualification context</h3><span>{selectedLead.qualificationDecision ? "Personnel-reviewed" : "Generated from submitted answers"}</span></div><textarea value={selectedLead.qualificationReviewReason || selectedLead.notes || "No qualification notes."} readOnly rows={4} /><Link className="open-record-link" href={`/dashboard/leads/${selectedLead.id}`}>Review workflow →</Link></section>
           </article> : <div className="lead-detail-placeholder"><strong>{loading ? "Loading lead details…" : loadError ? "Details unavailable" : "Select a lead"}</strong><p>{loading ? "The newest live lead will be selected automatically." : "Choose a lead from the inbox to review its submission."}</p></div>}
         </section>
       </main>

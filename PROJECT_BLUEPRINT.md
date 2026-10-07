@@ -176,6 +176,8 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 6 — Qualification and site-inspection workflow
 
+**Status:** Completed. Personnel can confirm or override the preliminary classification with a recorded reason, confirm technical inspection triggers, move leads through controlled status transitions, and create or schedule an internal site-inspection request. The API prevents customer-support users from declaring quotation readiness or completing a technical inspection, and every workflow decision is retained in the lead activity history.
+
 **Goal:** Turn lead information into a controlled operational next action without automating technical approval.
 
 **Deliverables:**
@@ -443,4 +445,4 @@ Milestones 6 through 9. Add notifications, case studies, analytics, geographic e
 
 ## 8. Immediate next step
 
-Complete **Wiring Milestone 6 — Qualification and site-inspection workflow**. Add controlled status transitions, recorded classification overrides, technical inspection triggers, and internal site-inspection requests while keeping final technical approval with qualified personnel.
+Complete **Wiring Milestone 7 — Authentication, permissions, and production hardening**. Replace the current demo actor identity with authenticated staff accounts, enforce roles from trusted sessions, protect internal routes and mutations, and add the operational security controls required before real customer use.

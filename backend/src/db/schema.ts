@@ -20,6 +20,9 @@ export const leadClassificationEnum = pgEnum("lead_classification", [
   "outside_service_area",
   "priority_review",
 ]);
+export const qualificationDecisionEnum = pgEnum("qualification_decision", ["confirmed", "overridden"]);
+export const staffRoleEnum = pgEnum("staff_role", ["customer_support", "technical", "manager", "admin"]);
+export const inspectionRequestStatusEnum = pgEnum("inspection_request_status", ["requested", "scheduled", "completed", "cancelled"]);
 
 export type LeadAnswers = Record<string, unknown>;
 export type EstimateSnapshot = {
@@ -35,6 +38,12 @@ export const leads = pgTable("leads", {
   source: leadSourceEnum("source").notNull(),
   status: leadStatusEnum("status").notNull().default("new"),
   classification: leadClassificationEnum("classification").notNull(),
+  reviewedClassification: leadClassificationEnum("reviewed_classification"),
+  qualificationDecision: qualificationDecisionEnum("qualification_decision"),
+  qualificationReviewReason: text("qualification_review_reason"),
+  qualificationReviewedBy: varchar("qualification_reviewed_by", { length: 160 }),
+  qualificationReviewedAt: timestamp("qualification_reviewed_at", { withTimezone: true }),
+  confirmedInspectionTriggers: jsonb("confirmed_inspection_triggers").$type<string[]>().notNull().default([]),
   qualificationScore: integer("qualification_score").notNull(),
   classificationReasons: jsonb("classification_reasons").$type<string[]>().notNull().default([]),
   customerName: varchar("customer_name", { length: 160 }).notNull(),
@@ -81,6 +90,22 @@ export const callRecords = pgTable("call_records", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [uniqueIndex("call_records_lead_id_unique").on(table.leadId)]);
+
+export const siteInspectionRequests = pgTable("site_inspection_requests", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  leadId: uuid("lead_id").notNull().references(() => leads.id, { onDelete: "cascade" }),
+  status: inspectionRequestStatusEnum("status").notNull().default("requested"),
+  reason: text("reason").notNull(),
+  inspectionTriggers: jsonb("inspection_triggers").$type<string[]>().notNull().default([]),
+  preferredDate: timestamp("preferred_date", { withTimezone: true }),
+  scheduledFor: timestamp("scheduled_for", { withTimezone: true }),
+  assignedTechnicalName: varchar("assigned_technical_name", { length: 160 }),
+  technicalNotes: text("technical_notes"),
+  requestedBy: varchar("requested_by", { length: 160 }).notNull(),
+  requestedByRole: staffRoleEnum("requested_by_role").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [uniqueIndex("site_inspection_requests_lead_id_unique").on(table.leadId)]);
 
 export type Lead = typeof leads.$inferSelect;
 export type NewLead = typeof leads.$inferInsert;
