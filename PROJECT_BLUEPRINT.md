@@ -19,11 +19,11 @@ Smoke and fire alarms belong to the **Fire Detection & Alarm Systems** category.
 
 Expansion into other construction services should happen only after these focused workflows are operating reliably.
 
-## Current priority — Connect the proof of concept
+## Current priority — Secure and harden the connected proof of concept
 
-**Status:** The frontend proof of concept is implemented. It includes the Residential LPG assessment, LPG budget estimator, lead dashboard, detailed personnel call record, and printable PDF record. The TypeScript backend and Neon/Drizzle foundation are also implemented, but the frontend is not connected to it yet.
+**Status:** The connected proof of concept is implemented through **Wiring Milestone 6 — Qualification and site-inspection workflow**. It includes the Residential LPG assessment, LPG budget estimator, Neon-backed lead dashboard, persistent personnel call record and activity history, printable record, qualification review, controlled lead statuses, and site-inspection workflow. It is not production-ready: staff authentication, trusted server-side identity and permissions, security controls, retention rules, monitoring, and recovery work remain in **Wiring Milestone 7 — Authentication, permissions, and production hardening**.
 
-The immediate goal is to connect the working frontend to Neon in small, independently testable milestones. The team should be able to review each connection before the next workflow begins using permanent data.
+The frontend-to-Neon connection sequence was completed in small, independently testable milestones. The next goal is to secure and operationally harden that connected workflow before it handles real customer data or production traffic.
 
 The connected proof of concept will demonstrate:
 
@@ -80,7 +80,7 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 1 — Neon environment and database verification
 
-**Status:** Completed. The initial migration was applied and test lead `BNM-2026-0D800287` was created and retrieved successfully through the API.
+**Status:** Completed. The initial migration was applied and a non-production test lead was created and retrieved successfully through the API.
 
 **Goal:** Confirm that the application can safely persist and retrieve records from the selected Neon project.
 
@@ -99,7 +99,7 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 2 — Assessment submission to Neon
 
-**Status:** Completed. Browser submission `BNM-2026-99BAEA19` was persisted to Neon and remained duplicate-safe after refreshing the confirmation page.
+**Status:** Completed. A non-production browser submission was persisted to Neon and remained duplicate-safe after refreshing the confirmation page.
 
 **Goal:** Make the Residential LPG assessment the first real lead source.
 
@@ -119,7 +119,7 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 3 — Estimator opt-in lead capture
 
-**Status:** Completed. Browser submission `BNM-2026-D8EE92F5` was persisted to Neon with its exact estimator snapshot and remained duplicate-safe after refreshing the confirmation page.
+**Status:** Completed. A non-production browser submission was persisted to Neon with its exact estimator snapshot and remained duplicate-safe after refreshing the confirmation page.
 
 **Goal:** Preserve the estimator as a low-friction anonymous tool while allowing interested customers to request contact.
 
@@ -138,7 +138,7 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 4 — Dashboard reads live leads
 
-**Status:** Completed. The dashboard loaded three Neon leads in browser verification, filtered assessment and estimator sources correctly, and opened UUID-backed detail pages for `BNM-2026-99BAEA19` and `BNM-2026-D8EE92F5`.
+**Status:** Completed. The dashboard loaded non-production Neon leads in browser verification, filtered assessment and estimator sources correctly, and opened the corresponding UUID-backed detail pages.
 
 **Goal:** Replace dashboard mock data with Neon records without changing the personnel workflow unnecessarily.
 
@@ -157,7 +157,7 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 #### Wiring Milestone 5 — Persistent call record and activity history
 
-**Status:** Completed. Call-record drafts, checklist responses, comments, summaries, finalization state, manager questions, and activity events now persist in Neon. Browser verification confirmed that the draft for `BNM-2026-D8EE92F5` survived a full page reload and restored its checklist progress, comment, summary, and activity history.
+**Status:** Completed. Call-record drafts, checklist responses, comments, summaries, finalization state, manager questions, and activity events now persist in Neon. Browser verification confirmed that a non-production draft survived a full page reload and restored its checklist progress, comment, summary, and activity history.
 
 **Goal:** Preserve the personnel and management record currently stored only in the browser.
 

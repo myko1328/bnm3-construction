@@ -2,6 +2,14 @@
 
 BNM3 Construction is a pnpm monorepo containing a Next.js frontend and a TypeScript API backed by Neon PostgreSQL.
 
+## Documentation
+
+- [Feature catalog](docs/features/README.md) — implemented behavior, operational readiness, evidence, and known limitations
+- [Implementation log](docs/implementation-log.md) — reverse-chronological record of material feature deliveries and status changes
+- [Project blueprint](PROJECT_BLUEPRINT.md) — roadmap, milestone state, and product guardrails
+- [Residential LPG funnel analysis](docs/residential-lpg-funnel-question-analysis.md) — approved proof-of-concept research direction
+- [Residential LPG estimating specification](docs/residential-lpg-estimating-spec.md) — draft business and pricing rules, not approved production policy
+
 ## Project structure
 
 ```text
@@ -89,9 +97,9 @@ The local configuration should contain:
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-## 4. Apply the database migration
+## 4. Apply database migrations
 
-The initial migration is already included in `backend/drizzle`. Apply it to your Neon database:
+Generated migrations are included in `backend/drizzle`. Apply all pending migrations to your Neon database:
 
 ```bash
 pnpm --filter backend db:migrate
@@ -170,6 +178,8 @@ Cloudflare backend commands:
 
 ## Production build
 
+> **Current POC boundary:** Do not deploy this application for real customer or staff use yet. Staff records and mutations are unauthenticated, and **Wiring Milestone 7 — Authentication, permissions, and production hardening** is incomplete. The commands below document the build targets only; they are not production-readiness approval.
+
 Build both applications:
 
 ```bash
@@ -192,16 +202,16 @@ When deploying the frontend separately, configure its deployment project root as
 
 For the backend, create a separate Cloudflare Worker and configure its build root as `backend` and its deploy command as `pnpm deploy`. Before deploying, configure `DATABASE_URL` as an encrypted Worker secret and `CORS_ORIGIN` as a Worker variable containing the exact deployed frontend origin. The Worker name must match `bnm3-construction-be` from `backend/wrangler.jsonc`.
 
-## Backend endpoints
+## Backend endpoint summary
+
+`POST /api/v1/leads` is the intended public intake endpoint. The remaining lead endpoints are staff operations, but authentication and trusted server-side role enforcement are not implemented yet; do not expose this proof of concept to real customer data or production traffic. The [feature catalog](docs/features/README.md) documents the current operational boundary.
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Confirm that the API process is running |
 | `GET` | `/ready` | Confirm that the API can reach Neon |
 | `POST` | `/api/v1/leads` | Create and preliminarily classify a lead |
-| `GET` | `/api/v1/leads` | List leads, optionally filtered by status or source |
-| `GET` | `/api/v1/leads/:id` | Retrieve a lead and its activity history |
-| `PATCH` | `/api/v1/leads/:id/status` | Update a lead status and append an activity |
+| Multiple | `/api/v1/leads` and `/api/v1/leads/:id/*` | Staff lead reads, call records, questions, qualification, status, and inspection workflows; see [`lead.routes.ts`](backend/src/modules/leads/lead.routes.ts) for the canonical route definitions |
 
 ## Troubleshooting
 
