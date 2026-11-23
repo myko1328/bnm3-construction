@@ -17,7 +17,8 @@
 .intro h1 { margin: 7px 0 0; color: #07134f; font-size: clamp(34px, 5vw, 54px); line-height: .98; letter-spacing: -.045em; }
 .intro p { margin: 0; color: #556077; line-height: 1.7; }
 .notice { width: min(1180px, calc(100% - 36px)); margin: 0 auto 24px; padding: 14px 18px; border-left: 4px solid #e6a600; background: #fff7d6; color: #54400b; font-size: 13px; line-height: 1.55; }
-.documentOption { width: min(1180px, calc(100% - 36px)); margin: -8px auto 24px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd3df; border-radius: 10px; color: #25324a; background: white; cursor: pointer; }
+.documentOptions { width: min(1180px, calc(100% - 36px)); margin: -8px auto 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.documentOption { min-width: 0; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd3df; border-radius: 10px; color: #25324a; background: white; cursor: pointer; }
 .documentOption input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1646d8; }
 .documentOption span { display: grid; gap: 2px; }
 .documentOption small { color: #667085; font-size: 12px; font-weight: 500; }
@@ -38,15 +39,17 @@
 .letterEditor fieldset { margin: 18px 0 0; padding: 0 0 2px; border: 0; border-top: 1px solid #d7dde7; }
 .letterEditor legend { padding: 16px 0 0; color: #07134f; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
 .letterPage { width: 210mm; min-width: 0; min-height: 297mm; padding: 16mm 18mm 14mm; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; border: 1px solid #b7bec9; color: #171b24; background: white; box-shadow: 0 20px 60px rgba(12, 25, 65, .15); font-family: Arial, Helvetica, sans-serif; }
-.letterheadHeader { min-height: 38mm; display: grid; grid-template-columns: 42mm 1fr; align-items: center; gap: 5mm; }
+.letterheadHeader { min-height: 38mm; display: grid; grid-template-columns: 39mm 1fr; align-items: center; gap: 1.5mm; }
 .letterheadHeader img { width: 39mm; height: 32mm; object-fit: contain; }
 .letterheadIdentity { min-width: 0; display: grid; align-content: center; justify-items: start; }
-.letterheadHeader p { margin: 0; display: flex; align-items: baseline; gap: 3mm; white-space: nowrap; line-height: .9; }
-.letterheadHeader p strong { color: #ef2028; font-family: Georgia, serif; font-size: 30pt; letter-spacing: .02em; }
-.letterheadHeader p span { color: #07166f; font-family: Georgia, serif; font-size: 14pt; font-weight: 900; letter-spacing: .01em; }
-.letterheadHeader small { display: block; width: 100%; margin-top: 4mm; white-space: pre-wrap; font-size: 10pt; line-height: 1.35; text-align: left; }
-.senderBlock { width: 54mm; margin-top: 2mm; display: grid; justify-items: center; text-align: center; font-family: Georgia, serif; font-size: 8.5pt; line-height: 1.35; }
-.senderBlock strong { color: #e6262e; text-decoration: underline; }
+.letterheadHeader p { margin: 0; display: flex; align-items: baseline; gap: 1mm; white-space: nowrap; line-height: .78; }
+.letterheadHeader p strong { color: #ef2028; font-family: Cambria, "Times New Roman", serif; font-size: 36px; letter-spacing: .02em; }
+.letterheadHeader p span { color: #07166f; font-family: Cambria, "Times New Roman", serif; font-size: 14px; font-weight: 900; letter-spacing: .01em; }
+.letterheadHeader small { display: block; width: 100%; margin-top: 1.5mm; white-space: pre-wrap; font-size: 10pt; line-height: 1.15; text-align: left; }
+.senderBlock { width: 39mm; margin-top: 2mm; display: grid; justify-items: center; text-align: center; font-family: Cambria, "Times New Roman", serif; font-size: 8.5pt; line-height: 1.2; }
+.senderBlock strong { color: #e6262e; font-weight: 900; white-space: nowrap; }
+.senderBlock em { font-weight: 700; }
+.senderBlock span { white-space: pre-wrap; }
 .letterDate { margin: 10mm 0 9mm 10mm; font-size: 11pt; }
 .recipientBlock { margin-left: 10mm; display: grid; gap: 1.5mm; white-space: pre-wrap; font-size: 10.5pt; font-style: normal; line-height: 1.25; }
 .salutation { margin: 9mm 0 8mm 10mm; font-size: 11pt; }
@@ -62,13 +65,13 @@
 .signatureSpace { height: 17mm; border-bottom: 1px solid #232936; }
 .letterClosing strong { margin-top: 2mm; text-align: center; text-transform: uppercase; text-decoration: underline; }
 .letterClosing span { text-align: center; font-weight: 800; }
-.letterDisclaimer { margin: auto 0 0; padding-top: 5mm; border-top: 1px solid #cfd5df; color: #596274; font-size: 7.5pt; line-height: 1.35; }
 .finalSequence { width: min(210mm, calc(100% - 36px)); margin: 0 auto; display: grid; gap: 28px; }
 .finalSequence .letterPage, .finalSequence .sheet { width: 100%; }
 .reviewSheet .noPrint { display: none !important; }
 .reviewSheet input, .reviewSheet textarea { cursor: default; }
 .reviewSheet .tableScroll { overflow-x: hidden; }
 .reviewSheet .costTable { width: 100%; min-width: 0; }
+.reviewSheet .actionColumn { display: none; }
 .funnelActions { width: min(1180px, calc(100% - 36px)); margin: 24px auto 0; display: flex; justify-content: space-between; gap: 12px; }
 .funnelActions button { border: 0; border-radius: 9px; padding: 13px 18px; color: white; background: #1646d8; font: inherit; font-weight: 900; cursor: pointer; }
 .funnelActions button:hover { background: #0f35aa; }
@@ -136,6 +139,7 @@
   .headerActions a { padding-block: 6px; }
   .headerActions button { width: 100%; white-space: normal; }
   .funnelSteps { grid-template-columns: 1fr; }
+  .documentOptions { grid-template-columns: 1fr; }
   .funnelSteps button { padding: 10px 12px; }
   .intro { gap: 14px; margin-top: 32px; }
   .projectGrid { grid-template-columns: 1fr; }
@@ -155,8 +159,8 @@
 @media (max-width: 1180px) {
   .letterWorkspace { grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); }
   .letterPage { width: 100%; min-height: auto; aspect-ratio: 210 / 297; padding: 5vw; }
-  .letterheadHeader p strong { font-size: clamp(20pt, 4vw, 30pt); }
-  .letterheadHeader p span { font-size: clamp(9pt, 2vw, 14pt); }
+  .letterheadHeader p strong { font-size: clamp(28px, 4vw, 36px); }
+  .letterheadHeader p span { font-size: clamp(11px, 2vw, 14px); }
 }
 
 @media (max-width: 900px) {
@@ -184,20 +188,19 @@
   .intro { display: none; }
   .finalSequence { width: auto; margin: 0; display: block; }
   .letterPage { page: letterPage; width: 210mm; min-height: 297mm; padding: 20mm 20mm 16mm; border: none !important; outline: 0; box-shadow: none; break-after: page; page-break-after: always; }
-  .letterheadHeader { min-height: 34mm; }
+  .letterheadHeader { min-height: 34mm; grid-template-columns: 34mm 1fr; gap: 1.5mm; }
   .letterheadHeader img { width: 34mm; height: 29mm; }
-  .letterheadHeader p strong { font-size: 25pt; }
-  .letterheadHeader p span { font-size: 12pt; }
+  .senderBlock { width: 34mm; }
+  .letterheadHeader p strong { font-size: 36px; }
+  .letterheadHeader p span { font-size: 14px; }
   .letterDate { margin-top: 7mm; margin-bottom: 7mm; }
-  .recipientBlock, .salutation { margin-left: 8mm; }
+  .letterDate, .recipientBlock, .salutation { margin-left: 8mm; }
   .salutation { margin-top: 7mm; margin-bottom: 6mm; }
   .letterIntroduction { margin-inline: 8mm; }
   .letterSummary { margin-top: 9mm; }
   .letterClosing { margin-top: 13mm; }
-  .letterDisclaimer { color: #333; }
   .finalSequence .sheet { page: boqPage; counter-reset: boqPage 0; width: 194mm; max-width: 194mm; margin: 0; overflow: hidden; border: none !important; outline: 0; box-shadow: none; }
   .sheetHeader, .projectGrid, .projectGrid label, .projectGrid label:last-child, .projectGrid label > span, .section, .costTable th, .costTable td, .summary, .summary > div, .summary input, .signoff label, .signoff label > span { border-color: #9ba6b5; border-width: .25mm; }
-  .letterDisclaimer { border-top: .25mm solid #9ba6b5; }
   .reviewSheet input, .reviewSheet textarea { caret-color: transparent; }
   .sheetHeader > * { min-height: 9mm; padding: 2mm 3mm; }
   .sheetHeader h2 { font-size: 11pt; }

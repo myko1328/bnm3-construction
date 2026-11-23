@@ -40,6 +40,7 @@ type LetterDetails = {
   introduction: string;
   companyAddress: string;
   contactPerson: string;
+  contactTitle: string;
   contactLine: string;
   closing: string;
   signatoryName: string;
@@ -74,11 +75,12 @@ const EMPTY_LETTER: LetterDetails = {
   recipientAddress: "",
   salutation: "Sir/Madam:",
   introduction: "Herewith is our indicative working cost for",
-  companyAddress: "",
-  contactPerson: "",
-  contactLine: "",
+  companyAddress: "Noville, Tubod, Iligan City",
+  contactPerson: "Engr. Antonio L. Miparanum",
+  contactTitle: "Proprietor",
+  contactLine: "Tel.# (063)2220886\nCel#   09274403103",
   closing: "Thank you,",
-  signatoryName: "",
+  signatoryName: "ANTONIO MIPARANUM, PEE",
   signatoryTitle: "",
 };
 
@@ -137,11 +139,12 @@ function onePageSample(): WorksheetSample {
       recipientAddress: "Mandaue City, Cebu (mock address)",
       salutation: "Dear Ms. Santos:",
       introduction: "Herewith is our indicative working cost for",
-      companyAddress: "Sample BNM3 office address",
-      contactPerson: "Sample Project Coordinator",
-      contactLine: "Sample contact details",
+      companyAddress: "Noville, Tubod, Iligan City",
+      contactPerson: "Engr. Antonio L. Miparanum",
+      contactTitle: "Proprietor",
+      contactLine: "Tel.# (063)2220886\nCel#   09274403103",
       closing: "Thank you,",
-      signatoryName: "SAMPLE AUTHORIZED SIGNATORY",
+      signatoryName: "ANTONIO MIPARANUM, PEE",
       signatoryTitle: "General Manager",
     },
     materials: [
@@ -221,11 +224,12 @@ function multiPageSample(): WorksheetSample {
       recipientAddress: "Cebu City (mock address)",
       salutation: "Dear Mr. Reyes:",
       introduction: "Herewith is our indicative working cost for",
-      companyAddress: "Sample BNM3 office address",
-      contactPerson: "Sample Project Coordinator",
-      contactLine: "Sample contact details",
+      companyAddress: "Noville, Tubod, Iligan City",
+      contactPerson: "Engr. Antonio L. Miparanum",
+      contactTitle: "Proprietor",
+      contactLine: "Tel.# (063)2220886\nCel#   09274403103",
       closing: "Thank you,",
-      signatoryName: "SAMPLE AUTHORIZED SIGNATORY",
+      signatoryName: "ANTONIO MIPARANUM, PEE",
       signatoryTitle: "General Manager",
     },
     materials,
@@ -245,13 +249,14 @@ function LetterPage({ letter, project, quoteAmount }: { letter: LetterDetails; p
       <header className={styles.letterheadHeader}>
         <Image src="/bnm3-logo.png" alt="BNM3 Construction" width={259} height={188} priority />
         <div className={styles.letterheadIdentity}>
-          <p><strong>BNM3</strong><span>CONSTRUCTION</span></p>
+          <p><strong>BNM3</strong><span>ENTERPRISES</span></p>
           <small>{text(letter.companyAddress, "Company address")}</small>
         </div>
       </header>
 
       <div className={styles.senderBlock}>
         <strong>{text(letter.contactPerson, "Contact person")}</strong>
+        <em>{text(letter.contactTitle, "Position")}</em>
         <span>{text(letter.contactLine, "Contact details")}</span>
       </div>
 
@@ -282,7 +287,6 @@ function LetterPage({ letter, project, quoteAmount }: { letter: LetterDetails; p
         <span>{text(letter.signatoryTitle, "Position")}</span>
       </div>
 
-      <p className={styles.letterDisclaimer}>Indicative working cost only. This document is not a binding quotation and remains subject to qualified review of quantities, rates, taxes, technical feasibility, and site conditions.</p>
     </article>
   );
 }
@@ -362,6 +366,7 @@ export default function BillOfMaterials() {
   const [nextId, setNextId] = useState(4);
   const [contingencyRate, setContingencyRate] = useState("10");
   const [vatRate, setVatRate] = useState("12");
+  const [showContingency, setShowContingency] = useState(true);
   const [showDetailedDisclaimer, setShowDetailedDisclaimer] = useState(true);
 
   useEffect(() => {
@@ -403,6 +408,7 @@ export default function BillOfMaterials() {
     || labor.some((row) => Object.entries(row).some(([field, value]) => field !== "id" && Boolean(value)))
     || otherCosts.some((row) => Object.entries(row).some(([field, value]) => field !== "id" && Boolean(value)))
     || contingencyRate !== "10"
+    || !showContingency
     || vatRate !== "12";
   const loadSample = (createSample: () => WorksheetSample) => {
     if (hasWorksheetData && !window.confirm("Replace the current worksheet with synthetic mock project data?")) return;
@@ -456,10 +462,16 @@ export default function BillOfMaterials() {
         <strong>Working document only.</strong> Values are entered by the user and are not an approved price book, formal quotation, or technical scope. Qualified BNM3 personnel must review quantities, rates, taxes, and site conditions.
       </aside>
 
-      <label className={`${styles.documentOption} ${styles.noPrint}`}>
-        <input type="checkbox" checked={showDetailedDisclaimer} onChange={(event) => setShowDetailedDisclaimer(event.target.checked)} />
-        <span><strong>Show detailed BOQ disclaimer</strong><small>Include the qualified-review note at the end of the bill of quantities.</small></span>
-      </label>
+      <div className={`${styles.documentOptions} ${styles.noPrint}`}>
+        <label className={styles.documentOption}>
+          <input type="checkbox" checked={showContingency} onChange={(event) => setShowContingency(event.target.checked)} />
+          <span><strong>Show contingency in BOQ</strong><small>Display the contingency percentage and amount while preserving the entered rate and calculated total.</small></span>
+        </label>
+        <label className={styles.documentOption}>
+          <input type="checkbox" checked={showDetailedDisclaimer} onChange={(event) => setShowDetailedDisclaimer(event.target.checked)} />
+          <span><strong>Show detailed BOQ disclaimer</strong><small>Include the qualified-review note at the end of the bill of quantities.</small></span>
+        </label>
+      </div>
 
       <div className={step === 3 ? styles.finalSequence : undefined}>
         {step === 2 ? (
@@ -476,7 +488,8 @@ export default function BillOfMaterials() {
               <fieldset><legend>Letterhead contact</legend>
                 <label><span>Company address</span><input value={letter.companyAddress} onChange={(event) => updateLetter("companyAddress", event.target.value)} placeholder="Office address" /></label>
                 <label><span>Contact person</span><input value={letter.contactPerson} onChange={(event) => updateLetter("contactPerson", event.target.value)} placeholder="Name or department" /></label>
-                <label><span>Contact details</span><input value={letter.contactLine} onChange={(event) => updateLetter("contactLine", event.target.value)} placeholder="Phone or email" /></label>
+                <label><span>Contact title</span><input value={letter.contactTitle} onChange={(event) => updateLetter("contactTitle", event.target.value)} placeholder="Position" /></label>
+                <label><span>Contact details</span><textarea rows={2} value={letter.contactLine} onChange={(event) => updateLetter("contactLine", event.target.value)} placeholder="Phone or email" /></label>
               </fieldset>
               <fieldset><legend>Sign-off</legend>
                 <label><span>Closing</span><input value={letter.closing} onChange={(event) => updateLetter("closing", event.target.value)} /></label>
@@ -539,7 +552,7 @@ export default function BillOfMaterials() {
         <div className={styles.closingBlock}>
           <section className={styles.summary} aria-label="Project cost summary">
             <div><span>Subtotal cost</span><strong>{amount(totals.subtotal)}</strong></div>
-            <div><label htmlFor="contingency-rate">Contingency (%)</label><input id="contingency-rate" type="number" min="0" step="0.1" value={contingencyRate} onChange={(event) => setContingencyRate(event.target.value)} /><strong>{amount(totals.contingency)}</strong></div>
+            {showContingency ? <div><label htmlFor="contingency-rate">Contingency (%)</label><input id="contingency-rate" type="number" min="0" step="0.1" value={contingencyRate} onChange={(event) => setContingencyRate(event.target.value)} /><strong>{amount(totals.contingency)}</strong></div> : null}
             <div><label htmlFor="vat-rate">VAT (%)</label><input id="vat-rate" type="number" min="0" step="0.1" value={vatRate} onChange={(event) => setVatRate(event.target.value)} /><strong>{amount(totals.vat)}</strong></div>
             <div className={styles.grandTotal}><span>Overall project cost</span><strong>PHP {amount(totals.overall)}</strong></div>
           </section>
