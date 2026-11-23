@@ -24,6 +24,8 @@ Personnel can prepare a structured, printable working quotation package without 
 - Wide tables remain horizontally scrollable on narrow screens without showing a scrollbar, and large currency totals wrap inside their assigned cells instead of widening the page.
 - Contingency and VAT percentages are user-editable; both are calculated from the subtotal.
 - The final view orders the letterhead first and the complete BOQ afterward. Export combined PDF opens the browser's print dialog with that A4 sequence. When the BOQ exceeds one page, the browser paginates at row boundaries, repeats the section and column headings on continuation pages, and keeps the final totals, terms, and disclaimer together.
+- Exported pages use document-owned margins, so browser-added dates, titles, local URLs, and page outlines are not included. The letter has no page number; BOQ pages are numbered from 1.
+- A non-printing option controls whether the detailed qualified-review disclaimer appears at the end of the BOQ. The letter and worksheet remain explicitly labeled as indicative working documents even when that duplicate detailed note is hidden.
 - The worksheet labels the result as an indicative working cost rather than a binding quotation.
 
 ## Data and contracts
@@ -52,6 +54,7 @@ Arithmetic is deterministic and recalculates after each input. Empty, invalid, o
 
 - 2026-11-23 — the source PDF was rendered and visually inspected as a layout reference; no customer details or rates were copied into application defaults.
 - 2026-11-23 — frontend lint, type-check, production build, desktop/mobile browser interaction, three-step navigation, live letter preview, repeatable-row arithmetic, a ₱1,333,378,664.00 overflow case, hidden-scrollbar behavior, vertically centered sign-off values, both sample loaders, a two-page compact combined export, and a three-page 46-line-item combined export with the letter first, repeated continuation headings, and an intact final summary block were checked for this feature.
+- 2026-11-23 — the supplied two-page result was rendered and compared with new compact and multi-page exports. The new exports were checked without a browser header/footer suppression flag and contained no date, title, local URL, page outline, or letterhead page number; BOQ numbering began at 1 and continued on the second BOQ page.
 
 ## Evidence and related documents
 

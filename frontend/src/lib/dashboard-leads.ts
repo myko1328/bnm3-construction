@@ -30,6 +30,7 @@ export type DashboardLead = {
   classificationReasons: string[];
   assignee: string;
   budget: string;
+  detailLabel: string;
   equipment: string[];
   scope: string;
   nextAction: string;
@@ -102,6 +103,37 @@ const WORK_LABELS: Record<string, string> = {
   unsure: "Requested work requires clarification",
 };
 
+const SPRINKLER_BUILDING_LABELS: Record<string, string> = {
+  residential_house: "Residential house",
+  residential_multi: "Apartment / condominium",
+  commercial_office: "Commercial office",
+  commercial_retail: "Shop / retail",
+  commercial_hospitality: "Hotel / restaurant",
+  commercial_school: "School",
+  commercial_healthcare: "Healthcare facility",
+  warehouse: "Warehouse / storage",
+  industrial: "Factory / industrial",
+  mixed: "Mixed-use building",
+  other: "Other building use",
+  unsure: "Building use needs confirmation",
+};
+
+const SPRINKLER_WORK_LABELS: Record<string, string> = {
+  new_new: "New sprinkler system in a new building",
+  new_existing: "New sprinkler system in an existing building",
+  alteration: "Sprinkler extension or alteration",
+  maintenance: "Sprinkler repair, inspection, or maintenance",
+  unsure: "Sprinkler work requires clarification",
+};
+
+const SPRINKLER_ENVIRONMENT_LABELS: Record<string, string> = {
+  ambient: "Normal ambient area",
+  cold: "Freezer / cold-area review",
+  water_sensitive: "Water-sensitive / special-release review",
+  existing_type: "Existing system type reported",
+  unsure: "System environment needs confirmation",
+};
+
 export function statusLabel(status: LeadStatus) {
   return STATUS_LABELS[status];
 }
@@ -143,8 +175,42 @@ function readEquipment(answers: Record<string, unknown>) {
   });
 }
 
+function isSprinklerLead(lead: StoredLead | DashboardLead) {
+  return /sprinkler/i.test(lead.service);
+}
+
+function readSprinklerDetails(answers: Record<string, unknown>) {
+  const firePumpState = stringValue(answers.firePumpInstalled);
+  const details = [
+    SPRINKLER_ENVIRONMENT_LABELS[stringValue(answers.environment)],
+    firePumpState && `Fire pump: ${firePumpState === "yes" ? "reported installed" : firePumpState === "no" ? "not installed" : "not confirmed"}`,
+    stringValue(answers.existingSystemType) && `Existing type: ${stringValue(answers.existingSystemType).replaceAll("_", " ")}`,
+    typeof answers.totalAreaSqm === "number" && `${answers.totalAreaSqm.toLocaleString("en-PH", { maximumFractionDigits: 1 })} m² reported area`,
+  ].filter((value): value is string => Boolean(value));
+  const configuration = answers.estimatorConfiguration;
+  if (configuration && typeof configuration === "object") {
+    const config = configuration as Record<string, unknown>;
+    if (typeof config.planningHeadsLow === "number" && typeof config.planningHeadsHigh === "number") {
+      details.push(`${config.planningHeadsLow}–${config.planningHeadsHigh} planning sprinklers`);
+    }
+  }
+  return details;
+}
+
 function buildScope(lead: StoredLead) {
   const answers = lead.answers;
+  if (isSprinklerLead(lead)) {
+    const work = SPRINKLER_WORK_LABELS[stringValue(answers.requestedWork)] || lead.service;
+    const floors = typeof answers.floors === "number" ? answers.floors : Number(stringValue(answers.floors));
+    const basements = typeof answers.basements === "number" ? answers.basements : Number(stringValue(answers.basements));
+    const area = typeof answers.totalAreaSqm === "number" ? answers.totalAreaSqm : 0;
+    return [
+      work,
+      Number.isFinite(floors) && floors > 0 ? `${floors} above-ground floor${floors === 1 ? "" : "s"}` : "",
+      Number.isFinite(basements) && basements > 0 ? `${basements} basement level${basements === 1 ? "" : "s"}` : "",
+      area > 0 ? `${area.toLocaleString("en-PH", { maximumFractionDigits: 1 })} m² reported area` : "",
+    ].filter(Boolean).join(" · ");
+  }
   const work = WORK_LABELS[stringValue(answers.requestedWork)] || lead.service;
   const configuration = answers.estimatorConfiguration;
   if (!configuration || typeof configuration !== "object") return work;
@@ -171,8 +237,10 @@ function nextActionFor(lead: StoredLead) {
 
 export function toDashboardLead(lead: StoredLead): DashboardLead {
   const address = [lead.houseUnitNumber, lead.addressLine, lead.barangay && `Brgy. ${lead.barangay}`, lead.cityMunicipality].filter(Boolean).join(", ");
-  const equipment = readEquipment(lead.answers);
+  const sprinklerLead = isSprinklerLead(lead);
+  const equipment = sprinklerLead ? readSprinklerDetails(lead.answers) : readEquipment(lead.answers);
   const propertyCode = stringValue(lead.answers.propertyType);
+  const sprinklerBuildingCode = stringValue(lead.answers.buildingUse);
   const effectiveClassification = lead.reviewedClassification ?? lead.classification;
   const highPriority = ["priority_review", "site_inspection_likely"].includes(effectiveClassification);
 
@@ -182,7 +250,7 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
     name: lead.customerName,
     phone: lead.phone,
     service: lead.service,
-    property: PROPERTY_LABELS[propertyCode] || (lead.source === "estimator" ? "Not provided by estimator" : "Not provided"),
+    property: sprinklerLead ? SPRINKLER_BUILDING_LABELS[sprinklerBuildingCode] || "Not provided" : PROPERTY_LABELS[propertyCode] || (lead.source === "estimator" ? "Not provided by estimator" : "Not provided"),
     address: address || `${lead.barangay}, ${lead.cityMunicipality}`,
     city: lead.cityMunicipality,
     received: formatReceived(lead.createdAt),
@@ -203,7 +271,8 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
     qualificationScore: lead.qualificationScore,
     classificationReasons: lead.classificationReasons,
     assignee: lead.assignedTo ? "Assigned personnel" : "Unassigned",
-    budget: lead.estimate ? `${formatCurrency(lead.estimate.minimum)}–${formatCurrency(lead.estimate.maximum)}` : "Not calculated",
+    budget: lead.estimate ? (lead.estimate.minimum === lead.estimate.maximum ? formatCurrency(lead.estimate.minimum) : `${formatCurrency(lead.estimate.minimum)}–${formatCurrency(lead.estimate.maximum)}`) : "Not calculated",
+    detailLabel: sprinklerLead ? "System planning details" : "Equipment",
     equipment: equipment.length ? equipment : ["Not provided"],
     scope: buildScope(lead),
     nextAction: nextActionFor(lead),
@@ -223,6 +292,35 @@ export function toDashboardLead(lead: StoredLead): DashboardLead {
 }
 
 export function buildChecklist(lead: DashboardLead) {
+  if (isSprinklerLead(lead)) {
+    const captured: ChecklistItem[] = [
+      { id: "service", label: "Requested service identified", detail: lead.service },
+      { id: "property", label: "Building use provided", detail: lead.property },
+      { id: "scope", label: "Work type, floors, and area provided", detail: lead.scope },
+      { id: "system-condition", label: "System-review condition provided", detail: lead.equipment.join(", ") },
+      { id: "address", label: "Project area provided", detail: lead.address },
+      { id: "contact", label: "Contact number and consent provided", detail: lead.phone },
+    ];
+    const verify: ChecklistItem[] = [
+      { id: "confirm-scope", label: "Confirm building use, requested work, and included areas" },
+      { id: "confirm-dimensions", label: "Verify floor count, dimensions, ceiling conditions, and reported protected area" },
+      { id: "confirm-system-type", label: "Confirm whether wet, dry, preaction, deluge, or another approach requires design review" },
+      { id: "confirm-water-supply", label: "Ask about water source, flow-test data, fire pump, tank, mains, and standpipes" },
+      { id: "confirm-existing-records", label: "Request available plans, calculations, as-builts, and inspection records" },
+      { id: "confirm-safety", label: "Confirm any impairment, leak, discharge, damage, or out-of-service condition" },
+      { id: "budget-boundary", label: "Explain that planning heads are not a layout or formal quotation" },
+    ];
+    lead.missingQuestions.forEach((question, index) => verify.push({ id: `missing-${index}`, label: question }));
+    const next: ChecklistItem[] = [
+      { id: "contacted", label: "Customer successfully contacted" },
+      { id: "serviceable", label: "Project appears within BNM3 service capability" },
+      { id: "technical-owner", label: "Assign qualified sprinkler technical review" },
+      { id: "inspection-decision", label: "Decide whether a site inspection is required" },
+      { id: "documents", label: "Record plans, tests, photos, or reports requested" },
+      { id: "follow-up", label: "Record the next action and follow-up date" },
+    ];
+    return { captured, verify, next };
+  }
   const captured: ChecklistItem[] = [
     { id: "service", label: "Requested service identified", detail: lead.service },
     { id: "property", label: "Property type provided", detail: lead.property },
@@ -255,4 +353,24 @@ export function buildChecklist(lead: DashboardLead) {
     { id: "follow-up", label: "Record the next action and follow-up date" },
   ];
   return { captured, verify, next };
+}
+
+export function inspectionTriggerOptions(lead: DashboardLead) {
+  if (isSprinklerLead(lead)) return [
+    "Possible sprinkler impairment or active safety concern",
+    "Building use requires sprinkler-specific technical classification",
+    "Sprinkler scope spans multiple floors",
+    "An existing sprinkler system will be modified or investigated",
+    "Sprinkler system type or protection method requires technical confirmation",
+    "Water supply, pump, tank, main, or standpipe requires confirmation",
+    "Plans, calculations, as-builts, or inspection records are incomplete",
+  ];
+  return [
+    "Possible drilling or wall penetration",
+    "Pipe route is unclear",
+    "Installation spans multiple floors",
+    "Existing LPG system will be modified",
+    "Commercial or managed property",
+    "Possible safety concern",
+  ];
 }

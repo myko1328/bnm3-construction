@@ -39,13 +39,15 @@ No external system or production data is mutated. The app must not preload real 
 - [x] 2026-11-23T01:00:00+08:00 — Inspected repository rules, current BOQ implementation, and the complete reference PDF page.
 - [x] 2026-11-23T13:15:00+08:00 — Implemented the three-step funnel, typed letter state, sidebar editor, live preview, final sequence, and combined export.
 - [x] 2026-11-23T13:25:00+08:00 — Verified desktop and mobile layouts, compact and multi-page combined PDFs, frontend lint/type-check/build, and feature documentation.
+- [x] 2026-11-23T15:25:00+08:00 — Removed browser print furniture and page outlines, added BOQ-only numbering and an optional detailed disclaimer, aligned the final review, and revalidated compact and multi-page exports.
 
 ## Decisions and discoveries
 
 - 2026-11-23: Use one shared BOQ DOM instance and conditionally compose it after the letter in final review, avoiding duplicated worksheet state.
 - 2026-11-23: Derive the displayed quotation amount from the current BOQ overall total; terms and duration stay editable in the letter editor but can be copied from the BOQ.
 - 2026-11-23: Use A4 for the combined output to remain consistent with the existing BOQ export even though the visual reference is US Letter.
+- 2026-11-23: Use zero-margin letter pages and a named BOQ page style so Chrome cannot add its own title, URL, date, or letterhead page number; document padding and BOQ margin boxes own the printable layout.
 
 ## Outcomes and remaining risks
 
-The route now provides the requested BOQ → Letterhead → Final view funnel. The compact synthetic fixture exports as two A4 pages and the 46-line-item fixture exports as three A4 pages; both place the letter first and preserve BOQ continuation headers and totals. Frontend lint, type-check, production build, browser rendering, and Poppler page inspection passed. Browser-generated PDFs remain mutable working documents, letterhead contact/signatory values still require manual entry and qualified approval, and the package is not an approved formal quotation or persisted record.
+The route now provides the requested BOQ → Letterhead → Final view funnel. The compact synthetic fixture exports as two A4 pages and the 46-line-item fixture exports as three A4 pages; both place the unnumbered letter first, number BOQ pages from 1, preserve BOQ continuation headers and totals, and omit browser-added titles, dates, and local URLs. The detailed BOQ disclaimer is optional while the letter and worksheet retain their indicative-working-document labels. Frontend lint, type-check, production build, browser rendering, and Poppler page inspection passed. Browser-generated PDFs remain mutable working documents, letterhead contact/signatory values still require manual entry and qualified approval, and the package is not an approved formal quotation or persisted record.

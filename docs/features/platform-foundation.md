@@ -11,7 +11,7 @@ The workspace runs a Next.js frontend and a shared TypeScript Express API backed
 | Roadmap milestone | [**Wiring Milestone 0 — Monorepo and backend foundation** and **Wiring Milestone 1 — Neon environment and database verification**](../../PROJECT_BLUEPRINT.md#backend-wiring-milestones--current-implementation-sequence) |
 | Audience | Developers and operators |
 | Entry points | Root workspace commands; `/health`; `/ready`; `/api/v1/leads` |
-| Last verified | 2026-10-08 |
+| Last verified | 2026-11-24 |
 
 ## User outcome
 
@@ -21,6 +21,7 @@ Developers can run the frontend and API together, validate service health, and p
 
 - The pnpm workspace provides combined and package-specific development, lint, type-check, and build commands.
 - The Express application is shared by Node.js and Cloudflare Worker entry points.
+- The frontend retains its Next.js commands and also has a Vinext build target for a separate Cloudflare Worker. Static routes are prerendered as Worker assets while parameterized routes remain Worker-rendered.
 - `/health` reports process health and `/ready` checks database connectivity.
 - Drizzle schema and generated migrations define leads, activity entries, call records, qualification review fields, and site-inspection requests.
 - The roadmap reports that a non-production Neon migration and API create/read check completed for Wiring Milestone 1. That external database state is not reproduced by this documentation review.
@@ -45,11 +46,13 @@ Environment configuration is validated at startup, readiness returns a service-u
 - The public create schema accepts `manual` as a client-supplied source even though assessment and estimator are the intended public intake sources.
 - Public intake does not yet have production abuse controls or durable server-enforced idempotency.
 - Production deployment and production database validation are not authorized by this documentation baseline.
+- The Vinext adapter is currently beta; successful compatibility and local build checks establish deployment mechanics, not production readiness.
 - Automated backend behavioral tests are not configured.
 
 ## Validation evidence
 
 - 2026-10-08 — repository code, schema, generated migrations, scripts, and roadmap evidence reviewed; no runtime or database command was run for this documentation-only change.
+- 2026-11-24 — Vinext compatibility reported 100%; the frontend Worker build completed with eight static routes and one dynamic route. The existing Next.js build and local Worker runtime are validated separately in the migration ExecPlan.
 - The milestone-specific runtime evidence is roadmap-reported in [`PROJECT_BLUEPRINT.md`](../../PROJECT_BLUEPRINT.md).
 
 ## Evidence and related documents

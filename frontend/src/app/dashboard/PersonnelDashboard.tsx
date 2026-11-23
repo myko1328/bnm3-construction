@@ -99,7 +99,7 @@ export default function PersonnelDashboard() {
 
             <div className="detail-grid">
               <section><h3>Customer</h3><dl><div><dt>Mobile</dt><dd><a href={`tel:${selectedLead.phone.replaceAll(" ", "")}`}>{selectedLead.phone}</a></dd></div><div><dt>Location</dt><dd>{selectedLead.address}</dd></div><div><dt>Submitted</dt><dd>{selectedLead.createdAtLabel}</dd></div><div><dt>Lead source</dt><dd>{selectedLead.sourceLabel}</dd></div></dl></section>
-              <section><h3>Assessment</h3><dl><div><dt>Classification</dt><dd>{selectedLead.classificationLabel} · {selectedLead.qualificationScore}/100</dd></div><div><dt>Property</dt><dd>{selectedLead.property}</dd></div><div><dt>Scope</dt><dd>{selectedLead.scope}</dd></div><div><dt>Equipment</dt><dd>{selectedLead.equipment.join(", ")}</dd></div></dl></section>
+              <section><h3>Assessment</h3><dl><div><dt>Classification</dt><dd>{selectedLead.classificationLabel} · {selectedLead.qualificationScore}/100</dd></div><div><dt>Property</dt><dd>{selectedLead.property}</dd></div><div><dt>Scope</dt><dd>{selectedLead.scope}</dd></div><div><dt>{selectedLead.detailLabel}</dt><dd>{selectedLead.equipment.join(", ")}</dd></div></dl></section>
             </div>
 
             <section className="detail-budget"><div><span>Customer-generated budget</span><strong>{selectedLead.budget}</strong></div><p>Preliminary tool result only. Personnel must validate assumptions before preparing a quotation.</p></section>

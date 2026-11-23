@@ -244,8 +244,8 @@ function LetterPage({ letter, project, quoteAmount }: { letter: LetterDetails; p
     <article className={styles.letterPage} aria-label="Quotation letter preview">
       <header className={styles.letterheadHeader}>
         <Image src="/bnm3-logo.png" alt="BNM3 Construction" width={259} height={188} priority />
-        <div>
-          <p><strong>BNM3</strong> <span>CONSTRUCTION</span></p>
+        <div className={styles.letterheadIdentity}>
+          <p><strong>BNM3</strong><span>CONSTRUCTION</span></p>
           <small>{text(letter.companyAddress, "Company address")}</small>
         </div>
       </header>
@@ -362,6 +362,7 @@ export default function BillOfMaterials() {
   const [nextId, setNextId] = useState(4);
   const [contingencyRate, setContingencyRate] = useState("10");
   const [vatRate, setVatRate] = useState("12");
+  const [showDetailedDisclaimer, setShowDetailedDisclaimer] = useState(true);
 
   useEffect(() => {
     const previousDocumentOverflow = document.documentElement.style.overflowX;
@@ -455,6 +456,11 @@ export default function BillOfMaterials() {
         <strong>Working document only.</strong> Values are entered by the user and are not an approved price book, formal quotation, or technical scope. Qualified BNM3 personnel must review quantities, rates, taxes, and site conditions.
       </aside>
 
+      <label className={`${styles.documentOption} ${styles.noPrint}`}>
+        <input type="checkbox" checked={showDetailedDisclaimer} onChange={(event) => setShowDetailedDisclaimer(event.target.checked)} />
+        <span><strong>Show detailed BOQ disclaimer</strong><small>Include the qualified-review note at the end of the bill of quantities.</small></span>
+      </label>
+
       <div className={step === 3 ? styles.finalSequence : undefined}>
         {step === 2 ? (
           <div className={styles.letterWorkspace}>
@@ -543,7 +549,7 @@ export default function BillOfMaterials() {
             <label><span>Terms of payment</span><input value={details.paymentTerms} onChange={(event) => updateDetails("paymentTerms", event.target.value)} placeholder="Enter agreed terms" /></label>
             <label><span>Prepared by</span><input value={details.preparedBy} onChange={(event) => updateDetails("preparedBy", event.target.value)} placeholder="Name and role" /></label>
           </section>
-          <p className={styles.printDisclaimer}>Indicative working cost only. Not a binding quotation. Quantities, rates, tax treatment, technical feasibility, and site conditions require qualified review.</p>
+          {showDetailedDisclaimer ? <p className={styles.printDisclaimer}>Indicative working cost only. Not a binding quotation. Quantities, rates, tax treatment, technical feasibility, and site conditions require qualified review.</p> : null}
         </div>
         </article> : null}
       </div>

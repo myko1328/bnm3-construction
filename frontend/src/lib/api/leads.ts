@@ -114,6 +114,7 @@ type BaseLeadInput = {
   customer: {
     name: string;
     phone: string;
+    email?: string;
     consentedAt: string;
   };
   project: {
@@ -139,7 +140,7 @@ export type AssessmentLeadInput = BaseLeadInput & { source: "assessment" };
 
 export type EstimatorLeadInput = BaseLeadInput & {
   source: "estimator";
-  estimate: {
+  estimate?: {
     currency: "PHP";
     minimum: number;
     maximum: number;

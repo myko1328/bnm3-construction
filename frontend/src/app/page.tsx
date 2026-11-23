@@ -1,8 +1,28 @@
 import Image from "next/image";
+import Link from "next/link";
 
-const services = [
+type Service = {
+  number: string;
+  audience: string;
+  title: string;
+  description: string;
+  items: string[];
+  href?: string;
+  status?: string;
+};
+
+const services: Service[] = [
   {
     number: "01",
+    audience: "Building Fire Safety",
+    title: "Water-Based Fire Sprinkler Systems",
+    description:
+      "Five-question assessment for new sprinkler systems, extensions, retrofit work, and qualified technical follow-up.",
+    items: ["New sprinkler systems", "Extensions & retrofit", "Testing & inspection planning"],
+    href: "/assessment/fire-sprinkler",
+  },
+  {
+    number: "02",
     audience: "Residential",
     title: "LPG Installation & Gas Safety",
     description:
@@ -11,31 +31,31 @@ const services = [
     href: "/assessment/residential-lpg",
   },
   {
-    number: "02",
+    number: "03",
     audience: "Commercial",
     title: "Kitchen LPG & Fire Suppression",
     description:
       "Coordinated gas and fire-safety systems for restaurants, mall tenants, and professional kitchens.",
     items: ["Commercial LPG systems", "Kitchen hood suppression", "Testing & commissioning"],
-    href: "#assessment",
+    status: "Assessment not yet available",
   },
   {
-    number: "03",
+    number: "04",
     audience: "Industrial",
     title: "Lighting & Electrical Wiring",
     description:
       "Reliable lighting installation, LED retrofits, and associated branch wiring for demanding facilities.",
     items: ["New industrial lighting", "LED retrofit projects", "Electrical branch wiring"],
-    href: "#assessment",
+    status: "Assessment not yet available",
   },
   {
-    number: "04",
+    number: "05",
     audience: "Residential",
     title: "Smoke & Fire Alarm Systems",
     description:
       "Early-warning detection for homes through properly planned smoke alarms, heat detectors, and interconnected alarm systems.",
     items: ["Smoke alarm installation", "Heat detection", "Interconnected alarms"],
-    href: "#assessment",
+    status: "Assessment not yet available",
   },
 ];
 
@@ -114,7 +134,9 @@ export default function Home() {
             <div className="nav-dropdown">
               <button type="button" aria-haspopup="true">Project Tools <svg aria-hidden="true" viewBox="0 0 16 16"><path d="m3.5 6 4.5 4 4.5-4" /></svg></button>
               <div className="nav-submenu">
-                <a href="/tools/lpg-budget-estimator"><strong>LPG Budget Estimator</strong><small>Explore a preliminary installation range</small></a>
+                <Link href="/tools/fire-sprinkler-budget-estimator"><strong>Sprinkler Initial Quote</strong><small>Explore an indicative head allowance</small></Link>
+                <Link href="/tools/lpg-budget-estimator"><strong>LPG Budget Estimator</strong><small>Explore a preliminary installation range</small></Link>
+                <Link href="/tools/bill-of-materials"><strong>Bill of Materials</strong><small>Build a printable project cost worksheet</small></Link>
               </div>
             </div>
             <a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a>
@@ -133,7 +155,7 @@ export default function Home() {
               <p className="hero-lead">LPG, fire-safety, and industrial electrical systems for homes, commercial kitchens, and industrial facilities.</p>
               <div className="hero-actions">
                 <a className="button button-primary" href="#assessment">Start a project assessment <ArrowIcon /></a>
-                <a className="text-link" href="/tools/lpg-budget-estimator">Explore LPG budget <ArrowIcon /></a>
+                <Link className="text-link" href="/tools/fire-sprinkler-budget-estimator">Get an initial sprinkler quote <ArrowIcon /></Link>
                 <a className="text-link" href="#services">Explore our services <span>↓</span></a>
               </div>
               <div className="hero-proof" aria-label="Service strengths">
@@ -146,10 +168,11 @@ export default function Home() {
                 <div className="visual-topline"><span>BNM3 / SYSTEMS</span></div>
                 <div className="visual-center"><ConstructionSystemsDiagram /></div>
                 <div className="visual-system-list">
-                  <div><span>01</span><strong>LPG & gas safety</strong></div>
-                  <div><span>02</span><strong>Fire suppression</strong></div>
-                  <div><span>03</span><strong>Industrial electrical</strong></div>
-                  <div><span>04</span><strong>Smoke & fire alarms</strong></div>
+                  <div><span>01</span><strong>Water-based fire sprinklers</strong></div>
+                  <div><span>02</span><strong>LPG & gas safety</strong></div>
+                  <div><span>03</span><strong>Kitchen fire suppression</strong></div>
+                  <div><span>04</span><strong>Industrial electrical</strong></div>
+                  <div><span>05</span><strong>Smoke & fire alarms</strong></div>
                 </div>
               </div>
               <div className="safety-stripe" aria-hidden="true" />
@@ -169,7 +192,7 @@ export default function Home() {
         <section className="section services-section" id="services">
           <div className="container">
             <div className="section-heading">
-              <div><div className="eyebrow"><span /> Focused expertise</div><h2>Four systems.<br />One accountable team.</h2></div>
+              <div><div className="eyebrow"><span /> Focused expertise</div><h2>Five systems.<br />One accountable team.</h2></div>
               <p>Start with the environment that matches your project. We’ll guide you through the right questions and next steps.</p>
             </div>
             <div className="service-grid">
@@ -179,7 +202,9 @@ export default function Home() {
                   <div className="service-icon" aria-hidden="true"><BlueprintMark /></div>
                   <h3>{service.title}</h3><p>{service.description}</p>
                   <ul>{service.items.map((item) => <li key={item}><CheckIcon /> {item}</li>)}</ul>
-                  <a href={service.href}>Assess this project <ArrowIcon /></a>
+                  {service.href
+                    ? <Link href={service.href}>Assess this project <ArrowIcon /></Link>
+                    : <span className="service-status">{service.status}</span>}
                 </article>
               ))}
             </div>
@@ -241,9 +266,13 @@ export default function Home() {
             </div>
             <div className="assessment-options">
               {services.map((service) => (
-                <a href={service.number === "01" ? "/assessment/residential-lpg" : "#top"} key={service.number} aria-label={`Start ${service.title} assessment`}>
-                  <span>{service.audience}</span><strong>{service.title}</strong><ArrowIcon />
-                </a>
+                service.href
+                  ? <Link href={service.href} key={service.number} aria-label={`Start ${service.title} assessment`}>
+                      <span>{service.audience}</span><strong>{service.title}</strong><ArrowIcon />
+                    </Link>
+                  : <div className="assessment-option is-planned" key={service.number} aria-label={`${service.title}: ${service.status}`}>
+                      <span>{service.audience} · {service.status}</span><strong>{service.title}</strong><b>{service.number === "01" ? "Next" : "Planned"}</b>
+                    </div>
               ))}
             </div>
             <p className="assessment-note">Formal quotations remain subject to technical review and, where required, a site assessment.</p>
@@ -258,7 +287,7 @@ export default function Home() {
             <span className="brand-copy"><strong>BNM3</strong><span>Construction</span></span>
           </div>
           <p>LPG, fire-safety, and industrial electrical systems.</p>
-          <nav aria-label="Footer navigation"><a href="#services">Services</a><a href="/tools/lpg-budget-estimator">LPG budget estimator</a><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a><a href="/blueprint/customer-flow">Flow blueprint</a></nav>
+          <nav aria-label="Footer navigation"><a href="#services">Services</a><Link href="/tools/fire-sprinkler-budget-estimator">Sprinkler initial quote</Link><Link href="/tools/lpg-budget-estimator">LPG budget estimator</Link><Link href="/tools/bill-of-materials">Bill of materials</Link><a href="#process">Process</a><a href="#projects">Projects</a><a href="#about">About</a><Link href="/blueprint/customer-flow">Flow blueprint</Link></nav>
         </div>
         <div className="container footer-bottom"><span>© 2026 BNM3 Construction</span><span>Built for safer, better-documented projects.</span></div>
       </footer>

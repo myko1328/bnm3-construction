@@ -2,7 +2,7 @@
 
 [Back to feature catalog](README.md)
 
-Visitors can learn about BNM3's focus areas and enter the Residential LPG assessment or estimator, while stakeholders can view a visual preview of the intended customer-to-quotation journey.
+Visitors can learn about BNM3's focus areas and enter the sprinkler or Residential LPG customer tools, while stakeholders can view a visual preview of the intended customer-to-quotation journey.
 
 | Field | Value |
 | --- | --- |
@@ -11,17 +11,17 @@ Visitors can learn about BNM3's focus areas and enter the Residential LPG assess
 | Roadmap milestone | [Product **Milestone 1 — Brand, landing page, and information architecture**](../../PROJECT_BLUEPRINT.md#milestone-1--brand-landing-page-and-information-architecture) |
 | Audience | Prospective customers and project stakeholders |
 | Entry points | `/`; `/blueprint/customer-flow` |
-| Last verified | 2026-10-08 |
+| Last verified | 2026-10-12 |
 
 ## User outcome
 
-The landing page introduces services, process, credibility, and calls to action. Residential LPG links to implemented customer tools. The separate flow page explains the intended relationship between assessment, qualification, technical review, quotation, and project delivery.
+The landing page introduces services, process, credibility, and calls to action. Building fire sprinkler and Residential LPG entries link to implemented proof-of-concept tools. The separate flow page explains the intended relationship between assessment, qualification, technical review, quotation, and project delivery.
 
 ## Current behavior
 
-- The responsive public landing page presents residential, commercial, and industrial service categories and links to the Residential LPG assessment and budget estimator.
+- The responsive public landing page presents residential, commercial, and industrial service categories. Building Water-Based Fire Sprinkler Systems appears first and links to its implemented assessment; sprinkler and Residential LPG estimators are also linked.
 - The flow preview visually separates current, POC, next, and later stages and preserves the boundary between digital qualification and qualified professional approval.
-- Only Residential LPG has an implemented assessment. Other service presentations do not lead to dedicated working funnels.
+- Sprinkler and Residential LPG have implemented proof-of-concept assessment and estimator routes. Other service presentations do not lead to dedicated working funnels.
 
 ## Data and contracts
 
@@ -44,7 +44,8 @@ The pages are static application routes. No deployment, production availability,
 
 ## Validation evidence
 
-- 2026-10-08 — landing-page and flow-preview source plus roadmap criteria reviewed; no browser, accessibility, performance, or deployment validation was run for this documentation-only change.
+- 2026-10-12 — landing links and both sprinkler routes were checked with frontend lint, type-check, production build, and responsive browser smoke validation.
+- 2026-10-08 — landing-page and flow-preview source plus roadmap criteria reviewed; no browser, accessibility, performance, or deployment validation was run for the documentation baseline.
 
 ## Evidence and related documents
 
@@ -52,4 +53,5 @@ The pages are static application routes. No deployment, production availability,
 - [`frontend/src/app/blueprint/customer-flow/page.tsx`](../../frontend/src/app/blueprint/customer-flow/page.tsx)
 - [Residential LPG assessment](residential-lpg-assessment.md)
 - [Indicative LPG budget estimator](indicative-lpg-budget-estimator.md)
+- [Building water-based fire sprinkler assessment](water-based-fire-sprinkler-assessment.md)
 - [Implementation log](../implementation-log.md)

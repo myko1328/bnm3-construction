@@ -8,22 +8,23 @@ The platform should combine BNM3's field experience with a clear digital process
 
 ## 2. Initial service scope
 
-The initial service roadmap covers four services:
+The initial service roadmap now covers five services:
 
-1. Residential LPG Installation & Gas Safety
-2. Commercial Kitchen LPG & Fire Suppression
-3. Industrial Lighting & Electrical Wiring
-4. Residential Smoke & Fire Alarm Systems
+1. Building Water-Based Fire Sprinkler Systems
+2. Residential LPG Installation & Gas Safety
+3. Commercial Kitchen LPG & Fire Suppression
+4. Industrial Lighting & Electrical Wiring
+5. Residential Smoke & Fire Alarm Systems
 
 Smoke and fire alarms belong to the **Fire Detection & Alarm Systems** category. The initial public offer focuses on homes and may later expand into commercial panel-based fire detection systems.
 
 Expansion into other construction services should happen only after these focused workflows are operating reliably.
 
-## Current priority — Secure and harden the connected proof of concept
+## Current priority — Building fire sprinkler assessment and estimator POC
 
-**Status:** The connected proof of concept is implemented through **Wiring Milestone 6 — Qualification and site-inspection workflow**. It includes the Residential LPG assessment, LPG budget estimator, Neon-backed lead dashboard, persistent personnel call record and activity history, printable record, qualification review, controlled lead statuses, and site-inspection workflow. It is not production-ready: staff authentication, trusted server-side identity and permissions, security controls, retention rules, monitoring, and recovery work remain in **Wiring Milestone 7 — Authentication, permissions, and production hardening**.
+**Status:** Building Water-Based Fire Sprinkler Systems is now the first working service shown on the landing page. Its implemented POC provides a safety screen, five-question assessment, consented lead submission, one-page initial-quote estimator, and sprinkler-aware interpretation in the existing lead dashboard. For a narrow simple-new-building path, the estimator prices a conservative planning count at the user-approved ₱5,000 per-head allowance and records whether an existing fire pump is reported. The amount covers only the planning sprinkler-head allowance; existing-building work, alterations, maintenance, complex uses, special conditions, more than four floors, and incomplete inputs still suppress pricing. BNM3 technical and estimating review is required before operational launch.
 
-The frontend-to-Neon connection sequence was completed in small, independently testable milestones. The next goal is to secure and operationally harden that connected workflow before it handles real customer data or production traffic.
+The connected Residential LPG proof of concept remains implemented through **Wiring Milestone 6 — Qualification and site-inspection workflow**. **Wiring Milestone 7 — Authentication, permissions, and production hardening** has an approved JWT approach and remains mandatory before real customer data or production traffic. It is the next implementation milestone now that this sprinkler POC slice is implemented.
 
 The connected proof of concept will demonstrate:
 
@@ -34,7 +35,7 @@ The connected proof of concept will demonstrate:
 5. Call notes, verification records, activities, and statuses remaining available to management.
 6. Site-inspection recommendations being recorded without automatically making technical decisions.
 
-The question analysis is documented in [`docs/residential-lpg-funnel-question-analysis.md`](docs/residential-lpg-funnel-question-analysis.md).
+The Residential LPG question analysis is documented in [`docs/residential-lpg-funnel-question-analysis.md`](docs/residential-lpg-funnel-question-analysis.md). The proposed fire sprinkler intake and estimator boundaries are documented in [`docs/water-based-fire-sprinkler-assessment-requirements.md`](docs/water-based-fire-sprinkler-assessment-requirements.md).
 
 Commercial and industrial funnels, automatic formal quotations, project portals, QR maintenance records, advanced analytics, and geographic expansion remain deferred until the connected LPG proof of concept has been demonstrated and approved.
 
@@ -197,11 +198,17 @@ These milestones connect the existing frontend POC to Neon gradually. Only one m
 
 **Goal:** Prepare the connected POC for controlled real-world use.
 
+**Approved authentication approach:** Use a backend-managed JWT session system for staff authentication. Staff sign in with email and an Argon2id-hashed password. The backend issues a short-lived access JWT in an `HttpOnly`, `Secure`, `SameSite` cookie and a rotating refresh token whose hash and session metadata are stored in Neon. Tokens are never stored in `localStorage` or exposed to frontend JavaScript. The backend validates the fixed signing algorithm, issuer, audience, subject, session, expiry, and account state; it resolves current permissions from trusted database records rather than accepting client-supplied names or roles. Logout, password changes, account disabling, and suspected compromise revoke active sessions. Cookie-based requests include CSRF protection, exact credentialed CORS, and login abuse controls.
+
 **Deliverables:**
 
-- Add authenticated staff accounts.
+- Add authenticated staff accounts with administrator-controlled provisioning and Argon2id password hashing.
+- Add short-lived access JWTs, rotating refresh sessions stored as hashes in Neon, secure cookie delivery, expiry, rotation, revocation, and key-rotation procedures.
+- Add sign-in, sign-out, session refresh, account-disable, password-change, and authorized password-recovery behavior.
 - Define customer-support, technical, manager, and administrator permissions.
-- Protect dashboard and mutation endpoints.
+- Protect dashboard and staff API endpoints with backend-verified identity, current account state, and server-authoritative permissions.
+- Remove client-supplied actor identity and role from authorization decisions; attribute activities to stable authenticated staff IDs.
+- Add CSRF protection for cookie-authenticated mutations and configure exact credentialed CORS behavior.
 - Add API rate limiting, security headers, payload limits, and structured audit logs.
 - Define retention and deletion rules for customer contact and project information.
 - Configure production frontend and backend environments, CORS, and Neon branches.
@@ -445,4 +452,4 @@ Milestones 6 through 9. Add notifications, case studies, analytics, geographic e
 
 ## 8. Immediate next step
 
-Complete **Wiring Milestone 7 — Authentication, permissions, and production hardening**. Replace the current demo actor identity with authenticated staff accounts, enforce roles from trusted sessions, protect internal routes and mutations, and add the operational security controls required before real customer use.
+Resume **Wiring Milestone 7 — Authentication, permissions, and production hardening** using the approved JWT approach before any real customer or production use. In parallel as a product approval activity—not an implementation expansion—BNM3 technical and estimating owners should review [`docs/water-based-fire-sprinkler-assessment-requirements.md`](docs/water-based-fire-sprinkler-assessment-requirements.md), including launch terminology, emergency/impairment operations, technical/site-inspection triggers, the narrow ₱5,000 per-head allowance, exclusions, validation evidence, and ownership. Do not broaden this allowance into a full system price book without calibration and approval.

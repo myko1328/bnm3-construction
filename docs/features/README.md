@@ -18,7 +18,8 @@ Implementation status and operational readiness are separate:
 | Feature | Audience and entry point | Implementation | Operational readiness | Roadmap evidence | Last verified |
 | --- | --- | --- | --- | --- | --- |
 | [Bill of materials worksheet](bill-of-materials-worksheet.md) | BNM3 estimators and project personnel; `/tools/bill-of-materials` | Implemented POC | Not production-ready | Product **Milestone 0 — Business rules and estimating foundation** | 2026-11-23 |
-| [Public website and flow preview](public-website-and-flow-preview.md) | Customers and stakeholders; `/` and `/blueprint/customer-flow` | Partially implemented | Not production-ready | Product **Milestone 1 — Brand, landing page, and information architecture** | 2026-10-08 |
+| [Public website and flow preview](public-website-and-flow-preview.md) | Customers and stakeholders; `/` and `/blueprint/customer-flow` | Partially implemented | Not production-ready | Product **Milestone 1 — Brand, landing page, and information architecture** | 2026-10-12 |
+| [Building water-based fire sprinkler assessment](water-based-fire-sprinkler-assessment.md) | Customers and BNM3 reviewers; `/assessment/fire-sprinkler`, `/tools/fire-sprinkler-budget-estimator`, and the lead dashboard | Implemented POC | Not production-ready | Current priority — Building fire sprinkler assessment and estimator POC | 2026-10-12 |
 | [Platform and persistence foundation](platform-foundation.md) | Developers and operators; workspace and API | Implemented POC | Not production-ready | **Wiring Milestone 0 — Monorepo and backend foundation**; **Wiring Milestone 1 — Neon environment and database verification** | 2026-10-08 |
 | [Residential LPG assessment](residential-lpg-assessment.md) | Customers; `/assessment/residential-lpg` | Implemented POC | Not production-ready | **Wiring Milestone 2 — Assessment submission to Neon** | 2026-10-08 |
 | [Indicative LPG budget estimator](indicative-lpg-budget-estimator.md) | Customers; `/tools/lpg-budget-estimator` | Implemented POC | Not production-ready | **Wiring Milestone 3 — Estimator opt-in lead capture** | 2026-10-08 |
@@ -26,7 +27,7 @@ Implementation status and operational readiness are separate:
 | [Call records and activity history](call-records-and-activity-history.md) | Staff; lead detail record | Implemented POC | Not production-ready | **Wiring Milestone 5 — Persistent call record and activity history** | 2026-10-08 |
 | [Qualification and site-inspection workflow](qualification-and-site-inspection.md) | Staff; lead detail workflow | Implemented POC | Not production-ready | **Wiring Milestone 6 — Qualification and site-inspection workflow** | 2026-10-08 |
 
-The immediate next roadmap step is **Wiring Milestone 7 — Authentication, permissions, and production hardening**. Until it is completed and validated, internal records and mutations must not be treated as securely protected production operations.
+The sprinkler assessment and planning estimator POC is implemented. BNM3 technical and estimating owners must still approve its launch language, routing operations, and any future price book. The next implementation milestone is **Wiring Milestone 7 — Authentication, permissions, and production hardening**. Until it is completed and validated, internal records and mutations must not be treated as securely protected production operations.
 
 ## Evidence policy
 

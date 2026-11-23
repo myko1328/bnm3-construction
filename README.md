@@ -176,6 +176,15 @@ Cloudflare backend commands:
 | `pnpm --filter backend cf-typegen` | Regenerate Cloudflare runtime and binding types |
 | `pnpm --filter backend deploy` | Deploy the backend Worker |
 
+Cloudflare frontend commands:
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm --filter frontend dev:vinext` | Run the frontend through Vinext on port 3001 |
+| `pnpm --filter frontend build:vinext` | Build the frontend for Cloudflare Workers |
+| `pnpm --filter frontend start:vinext` | Preview the built frontend Worker locally |
+| `pnpm --filter frontend deploy:vinext` | Build and deploy the frontend Worker after its Cloudflare target is verified |
+
 ## Production build
 
 > **Current POC boundary:** Do not deploy this application for real customer or staff use yet. Staff records and mutations are unauthenticated, and **Wiring Milestone 7 — Authentication, permissions, and production hardening** is incomplete. The commands below document the build targets only; they are not production-readiness approval.
@@ -198,7 +207,19 @@ Start the production Next.js server after building:
 pnpm --filter frontend start
 ```
 
-When deploying the frontend separately, configure its deployment project root as `frontend`.
+The frontend has an additive Vinext target for Cloudflare Workers. Its existing Next.js development and production-build commands remain available. For a Git-connected Workers Build, use these settings:
+
+| Setting | Value |
+| --- | --- |
+| Worker name | `bnm3-construction-frontend` |
+| Root directory | `frontend` |
+| Build variable | `SKIP_DEPENDENCY_INSTALL=true` |
+| Build command | `pnpm install --filter frontend... --frozen-lockfile && pnpm run build:vinext` |
+| Deploy command | `pnpm run deploy:vinext` |
+
+The explicit filtered install is important in this monorepo: it avoids the automatic whole-workspace install that caused the earlier Cloudflare build to spend its timeout downloading dependencies for all workspace projects. Keep dependency and build-output caching enabled. The current configuration prerenders static routes into Worker assets and serves the parameterized lead-detail route through the Worker. It deliberately creates no KV cache or Cloudflare Images binding.
+
+Do not connect this build to production traffic yet. Before any live deployment, verify the Cloudflare account and Worker target, configure `NEXT_PUBLIC_API_URL` at build time with the intended backend origin, and complete the authentication and production-hardening milestone.
 
 For the backend, create a separate Cloudflare Worker and configure its build root as `backend` and its deploy command as `pnpm deploy`. Before deploying, configure `DATABASE_URL` as an encrypted Worker secret and `CORS_ORIGIN` as a Worker variable containing the exact deployed frontend origin. The Worker name must match `bnm3-construction-be` from `backend/wrangler.jsonc`.
 

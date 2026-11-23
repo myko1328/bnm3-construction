@@ -11,7 +11,7 @@ const supportedLocations = [
   "manolo fortich",
 ];
 
-const inspectionSignalLabels: Record<keyof CreateLeadInput["projectSignals"], string> = {
+const lpgInspectionSignalLabels: Record<keyof CreateLeadInput["projectSignals"], string> = {
   requiresDrilling: "Possible drilling or wall penetration",
   unclearPipeRoute: "Pipe route is unclear",
   multipleFloors: "Installation spans multiple floors",
@@ -20,9 +20,21 @@ const inspectionSignalLabels: Record<keyof CreateLeadInput["projectSignals"], st
   safetyConcern: "Possible safety concern",
 };
 
+const sprinklerInspectionSignalLabels: Record<keyof CreateLeadInput["projectSignals"], string> = {
+  requiresDrilling: "Possible penetrations or difficult installation access",
+  unclearPipeRoute: "Water supply, fire pump, or sprinkler system type requires technical confirmation",
+  multipleFloors: "Sprinkler scope spans multiple floors",
+  existingSystemModification: "An existing sprinkler system will be modified or investigated",
+  commercialProperty: "Building use requires sprinkler-specific technical classification",
+  safetyConcern: "Possible sprinkler impairment or active safety concern",
+};
+
 export function qualifyLead(input: CreateLeadInput) {
   const normalizedLocation = input.project.cityMunicipality.toLowerCase();
   const withinServiceArea = supportedLocations.some((location) => normalizedLocation.includes(location));
+  const inspectionSignalLabels = /sprinkler/i.test(input.project.service)
+    ? sprinklerInspectionSignalLabels
+    : lpgInspectionSignalLabels;
   const inspectionTriggers = Object.entries(input.projectSignals)
     .filter(([, active]) => active)
     .map(([signal]) => inspectionSignalLabels[signal as keyof typeof inspectionSignalLabels]);

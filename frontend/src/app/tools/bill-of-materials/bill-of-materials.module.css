@@ -17,6 +17,10 @@
 .intro h1 { margin: 7px 0 0; color: #07134f; font-size: clamp(34px, 5vw, 54px); line-height: .98; letter-spacing: -.045em; }
 .intro p { margin: 0; color: #556077; line-height: 1.7; }
 .notice { width: min(1180px, calc(100% - 36px)); margin: 0 auto 24px; padding: 14px 18px; border-left: 4px solid #e6a600; background: #fff7d6; color: #54400b; font-size: 13px; line-height: 1.55; }
+.documentOption { width: min(1180px, calc(100% - 36px)); margin: -8px auto 24px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd3df; border-radius: 10px; color: #25324a; background: white; cursor: pointer; }
+.documentOption input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1646d8; }
+.documentOption span { display: grid; gap: 2px; }
+.documentOption small { color: #667085; font-size: 12px; font-weight: 500; }
 .funnelSteps { width: min(900px, calc(100% - 36px)); margin: 28px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .funnelSteps button { min-width: 0; padding: 14px; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; border: 1px solid #cbd3df; border-radius: 12px; color: #526078; background: white; text-align: left; cursor: pointer; }
 .funnelSteps button > span { grid-row: 1 / 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: #526078; background: #e9edf4; font-weight: 900; }
@@ -36,10 +40,11 @@
 .letterPage { width: 210mm; min-width: 0; min-height: 297mm; padding: 16mm 18mm 14mm; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; border: 1px solid #b7bec9; color: #171b24; background: white; box-shadow: 0 20px 60px rgba(12, 25, 65, .15); font-family: Arial, Helvetica, sans-serif; }
 .letterheadHeader { min-height: 38mm; display: grid; grid-template-columns: 42mm 1fr; align-items: center; gap: 5mm; }
 .letterheadHeader img { width: 39mm; height: 32mm; object-fit: contain; }
-.letterheadHeader p { margin: 0; display: flex; align-items: baseline; gap: 3mm; white-space: nowrap; }
+.letterheadIdentity { min-width: 0; display: grid; align-content: center; justify-items: start; }
+.letterheadHeader p { margin: 0; display: flex; align-items: baseline; gap: 3mm; white-space: nowrap; line-height: .9; }
 .letterheadHeader p strong { color: #ef2028; font-family: Georgia, serif; font-size: 30pt; letter-spacing: .02em; }
-.letterheadHeader p span { color: #07166f; font-family: Georgia, serif; font-size: 14pt; font-weight: 900; }
-.letterheadHeader small { display: block; margin-top: 2mm; white-space: pre-wrap; font-size: 10pt; }
+.letterheadHeader p span { color: #07166f; font-family: Georgia, serif; font-size: 14pt; font-weight: 900; letter-spacing: .01em; }
+.letterheadHeader small { display: block; width: 100%; margin-top: 4mm; white-space: pre-wrap; font-size: 10pt; line-height: 1.35; text-align: left; }
 .senderBlock { width: 54mm; margin-top: 2mm; display: grid; justify-items: center; text-align: center; font-family: Georgia, serif; font-size: 8.5pt; line-height: 1.35; }
 .senderBlock strong { color: #e6262e; text-decoration: underline; }
 .letterDate { margin: 10mm 0 9mm 10mm; font-size: 11pt; }
@@ -61,6 +66,9 @@
 .finalSequence { width: min(210mm, calc(100% - 36px)); margin: 0 auto; display: grid; gap: 28px; }
 .finalSequence .letterPage, .finalSequence .sheet { width: 100%; }
 .reviewSheet .noPrint { display: none !important; }
+.reviewSheet input, .reviewSheet textarea { cursor: default; }
+.reviewSheet .tableScroll { overflow-x: hidden; }
+.reviewSheet .costTable { width: 100%; min-width: 0; }
 .funnelActions { width: min(1180px, calc(100% - 36px)); margin: 24px auto 0; display: flex; justify-content: space-between; gap: 12px; }
 .funnelActions button { border: 0; border-radius: 9px; padding: 13px 18px; color: white; background: #1646d8; font: inherit; font-weight: 900; cursor: pointer; }
 .funnelActions button:hover { background: #0f35aa; }
@@ -158,13 +166,24 @@
   .letterheadHeader p { flex-wrap: wrap; white-space: normal; }
 }
 
-@page { size: A4 portrait; margin: 10mm; }
+@page { size: A4 portrait; margin: 0; }
+@page letterPage { size: A4 portrait; margin: 0; }
+@page boqPage {
+  size: A4 portrait;
+  margin: 8mm 8mm 12mm;
+  counter-increment: boqPage;
+  @bottom-right {
+    content: counter(boqPage);
+    color: #1f2937;
+    font: 8pt Arial, Helvetica, sans-serif;
+  }
+}
 @media print {
   .noPrint { display: none !important; }
   .shell { padding: 0; background: white; }
   .intro { display: none; }
-  .finalSequence { width: 100%; margin: 0; display: block; }
-  .letterPage { width: 100%; min-height: 277mm; padding: 10mm 12mm 8mm; border-color: #777; box-shadow: none; break-after: page; page-break-after: always; }
+  .finalSequence { width: auto; margin: 0; display: block; }
+  .letterPage { page: letterPage; width: 210mm; min-height: 297mm; padding: 20mm 20mm 16mm; border: none !important; outline: 0; box-shadow: none; break-after: page; page-break-after: always; }
   .letterheadHeader { min-height: 34mm; }
   .letterheadHeader img { width: 34mm; height: 29mm; }
   .letterheadHeader p strong { font-size: 25pt; }
@@ -176,7 +195,10 @@
   .letterSummary { margin-top: 9mm; }
   .letterClosing { margin-top: 13mm; }
   .letterDisclaimer { color: #333; }
-  .sheet { width: 100%; max-width: 100%; margin: 0; overflow: hidden; border-color: #777; box-shadow: none; }
+  .finalSequence .sheet { page: boqPage; counter-reset: boqPage 0; width: 194mm; max-width: 194mm; margin: 0; overflow: hidden; border: none !important; outline: 0; box-shadow: none; }
+  .sheetHeader, .projectGrid, .projectGrid label, .projectGrid label:last-child, .projectGrid label > span, .section, .costTable th, .costTable td, .summary, .summary > div, .summary input, .signoff label, .signoff label > span { border-color: #9ba6b5; border-width: .25mm; }
+  .letterDisclaimer { border-top: .25mm solid #9ba6b5; }
+  .reviewSheet input, .reviewSheet textarea { caret-color: transparent; }
   .sheetHeader > * { min-height: 9mm; padding: 2mm 3mm; }
   .sheetHeader h2 { font-size: 11pt; }
   .sheetBrand { font-size: 10pt; }
@@ -190,7 +212,7 @@
   .sectionHeading { display: none; }
   .sectionHeading h2 { font-size: 10pt; }
   .tableScroll { overflow: visible; }
-  .costTable { width: 100%; min-width: 0; table-layout: fixed; font-size: 7.5pt; }
+  .costTable { width: 100% !important; min-width: 720px !important; max-width: 100% !important; table-layout: fixed; font-size: 7.5pt; }
   .costTable thead { display: table-header-group; }
   .costTable tfoot { display: table-row-group; break-inside: avoid; page-break-inside: avoid; }
   .costTable tr { break-inside: avoid; page-break-inside: avoid; }
