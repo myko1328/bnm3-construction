@@ -4,6 +4,13 @@ This reverse-chronological log records material feature deliveries and status tr
 
 [Open the feature catalog](features/README.md)
 
+## 2026-11-23 — Bill of materials worksheet POC
+
+- **Outcome:** Added a browser-only three-step quotation-package funnel: personnel build the BOQ, prepare a quotation letter through sidebar fields and a live preview, then review/export the letter followed by the BOQ. The letter reuses the BOQ's amount, terms, duration, project title, client, and location. Non-printing test controls load explicitly synthetic compact or multi-page mock projects. Multi-page BOQs split only between line items, repeat the active section and column headings on continuation pages, and keep the final totals and sign-off area together. The supplied PDFs informed document structure only; their real customer, personnel, contact, and pricing data were not copied.
+- **Feature:** [Bill of materials worksheet](features/bill-of-materials-worksheet.md)
+- **Validation:** Frontend lint, type-check, production build, desktop/mobile browser interaction, three-step navigation, live letter preview, row insertion/removal, arithmetic, large-total overflow, hidden-scrollbar behavior, both synthetic sample loaders, a two-page compact combined export, and a three-page 46-line-item combined export were checked for this change.
+- **Remaining limitations:** The worksheet has no authentication, persistence, approved price book, revision/approval history, import/export, or immutable document generation. Its totals remain indicative and require qualified review.
+
 ## 2026-10-08 — Feature documentation baseline
 
 - **Outcome:** Added a canonical feature catalog, reusable page template, initial feature pages, and contributor maintenance rules. Corrected the blueprint's stale connected-POC summary and expanded the README endpoint summary.

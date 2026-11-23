@@ -1,0 +1,214 @@
+.shell { min-height: 100vh; overflow-x: hidden; color: #162038; background: #eef2f7; padding-bottom: 72px; }
+.appHeader { min-height: 76px; padding: 12px clamp(18px, 4vw, 60px); display: flex; align-items: center; justify-content: space-between; gap: 24px; background: #07166f; color: white; box-shadow: 0 8px 24px rgba(4, 13, 59, .16); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand img { width: 56px; height: 42px; object-fit: contain; background: white; border-radius: 5px; }
+.brand span { display: grid; }
+.brand strong { font-size: 18px; letter-spacing: .04em; }
+.brand small { color: #cbd5ff; font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+.headerActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; font-size: 13px; font-weight: 800; }
+.headerActions a { color: #dbe3ff; }
+.headerActions button, .addButton { border: 0; border-radius: 8px; background: #f23838; color: white; font: inherit; font-weight: 800; cursor: pointer; }
+.headerActions button { padding: 12px 16px; white-space: nowrap; }
+.headerActions button:hover, .addButton:hover { background: #c91920; }
+.headerActions .sampleButton { border: 1px solid #aebcff; color: #07166f; background: #f4f6ff; }
+.headerActions .sampleButton:hover { color: #07166f; background: #dce3ff; }
+.intro { width: min(1180px, calc(100% - 36px)); margin: 44px auto 20px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 40px; align-items: end; }
+.eyebrow { color: #1646d8; font-size: 11px; font-weight: 900; letter-spacing: .16em; text-transform: uppercase; }
+.intro h1 { margin: 7px 0 0; color: #07134f; font-size: clamp(34px, 5vw, 54px); line-height: .98; letter-spacing: -.045em; }
+.intro p { margin: 0; color: #556077; line-height: 1.7; }
+.notice { width: min(1180px, calc(100% - 36px)); margin: 0 auto 24px; padding: 14px 18px; border-left: 4px solid #e6a600; background: #fff7d6; color: #54400b; font-size: 13px; line-height: 1.55; }
+.funnelSteps { width: min(900px, calc(100% - 36px)); margin: 28px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.funnelSteps button { min-width: 0; padding: 14px; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; border: 1px solid #cbd3df; border-radius: 12px; color: #526078; background: white; text-align: left; cursor: pointer; }
+.funnelSteps button > span { grid-row: 1 / 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: #526078; background: #e9edf4; font-weight: 900; }
+.funnelSteps strong { color: #1c2944; font-size: 14px; }
+.funnelSteps small { font-size: 11px; }
+.funnelSteps button[aria-current="step"] { border-color: #1646d8; box-shadow: 0 0 0 3px rgba(22, 70, 216, .12); }
+.funnelSteps button[aria-current="step"] > span { color: white; background: #1646d8; }
+.letterWorkspace { width: min(1440px, calc(100% - 36px)); margin: 0 auto; display: grid; grid-template-columns: 340px minmax(0, 210mm); gap: 24px; align-items: start; justify-content: center; }
+.letterEditor { max-height: calc(100vh - 28px); padding: 20px; position: sticky; top: 14px; overflow-y: auto; border: 1px solid #cbd3df; border-radius: 14px; color: #25324a; background: white; box-shadow: 0 14px 40px rgba(12, 25, 65, .1); }
+.letterEditor h2 { margin: 5px 0; color: #07134f; font-size: 24px; }
+.letterEditor > div > p { margin: 0 0 16px; color: #667085; font-size: 12px; line-height: 1.5; }
+.letterEditor label { margin-top: 11px; display: grid; gap: 5px; color: #344054; font-size: 12px; font-weight: 800; }
+.letterEditor input, .letterEditor textarea { width: 100%; border: 1px solid #b8c1cf; border-radius: 7px; padding: 9px 10px; color: #111827; background: white; font: inherit; font-weight: 500; resize: vertical; }
+.letterEditor input:focus, .letterEditor textarea:focus { outline: 3px solid rgba(22, 70, 216, .18); border-color: #1646d8; }
+.letterEditor fieldset { margin: 18px 0 0; padding: 0 0 2px; border: 0; border-top: 1px solid #d7dde7; }
+.letterEditor legend { padding: 16px 0 0; color: #07134f; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+.letterPage { width: 210mm; min-width: 0; min-height: 297mm; padding: 16mm 18mm 14mm; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden; border: 1px solid #b7bec9; color: #171b24; background: white; box-shadow: 0 20px 60px rgba(12, 25, 65, .15); font-family: Arial, Helvetica, sans-serif; }
+.letterheadHeader { min-height: 38mm; display: grid; grid-template-columns: 42mm 1fr; align-items: center; gap: 5mm; }
+.letterheadHeader img { width: 39mm; height: 32mm; object-fit: contain; }
+.letterheadHeader p { margin: 0; display: flex; align-items: baseline; gap: 3mm; white-space: nowrap; }
+.letterheadHeader p strong { color: #ef2028; font-family: Georgia, serif; font-size: 30pt; letter-spacing: .02em; }
+.letterheadHeader p span { color: #07166f; font-family: Georgia, serif; font-size: 14pt; font-weight: 900; }
+.letterheadHeader small { display: block; margin-top: 2mm; white-space: pre-wrap; font-size: 10pt; }
+.senderBlock { width: 54mm; margin-top: 2mm; display: grid; justify-items: center; text-align: center; font-family: Georgia, serif; font-size: 8.5pt; line-height: 1.35; }
+.senderBlock strong { color: #e6262e; text-decoration: underline; }
+.letterDate { margin: 10mm 0 9mm 10mm; font-size: 11pt; }
+.recipientBlock { margin-left: 10mm; display: grid; gap: 1.5mm; white-space: pre-wrap; font-size: 10.5pt; font-style: normal; line-height: 1.25; }
+.salutation { margin: 9mm 0 8mm 10mm; font-size: 11pt; }
+.letterIntroduction { margin: 0 10mm; font-size: 10.5pt; line-height: 1.45; }
+.letterSummary { margin: 12mm 18mm 0; display: grid; gap: 6mm; }
+.letterSummary div { display: grid; grid-template-columns: 42mm 4mm 1fr; align-items: baseline; }
+.letterSummary div::after { content: ":"; grid-column: 2; grid-row: 1; font-weight: 900; }
+.letterSummary dt, .letterSummary dd { margin: 0; font-size: 10.5pt; }
+.letterSummary dt { grid-column: 1; font-weight: 800; }
+.letterSummary dd { grid-column: 3; font-weight: 900; }
+.letterClosing { margin: 18mm 0 0 10mm; display: grid; width: 75mm; font-size: 10.5pt; }
+.letterClosing p { margin: 0; font-weight: 800; }
+.signatureSpace { height: 17mm; border-bottom: 1px solid #232936; }
+.letterClosing strong { margin-top: 2mm; text-align: center; text-transform: uppercase; text-decoration: underline; }
+.letterClosing span { text-align: center; font-weight: 800; }
+.letterDisclaimer { margin: auto 0 0; padding-top: 5mm; border-top: 1px solid #cfd5df; color: #596274; font-size: 7.5pt; line-height: 1.35; }
+.finalSequence { width: min(210mm, calc(100% - 36px)); margin: 0 auto; display: grid; gap: 28px; }
+.finalSequence .letterPage, .finalSequence .sheet { width: 100%; }
+.reviewSheet .noPrint { display: none !important; }
+.funnelActions { width: min(1180px, calc(100% - 36px)); margin: 24px auto 0; display: flex; justify-content: space-between; gap: 12px; }
+.funnelActions button { border: 0; border-radius: 9px; padding: 13px 18px; color: white; background: #1646d8; font: inherit; font-weight: 900; cursor: pointer; }
+.funnelActions button:hover { background: #0f35aa; }
+.funnelActions .secondaryAction { border: 1px solid #aeb7c5; color: #26334a; background: white; }
+.funnelActions .secondaryAction:hover { background: #edf1f6; }
+.sheet { width: min(1180px, calc(100% - 36px)); margin: 0 auto; background: white; border: 1px solid #cbd3df; box-shadow: 0 20px 60px rgba(12, 25, 65, .12); }
+.sheetHeader { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #9ba6b5; }
+.sheetHeader > * { margin: 0; min-height: 58px; padding: 13px 18px; display: flex; align-items: center; justify-content: center; }
+.sheetHeader h2 { border-left: 1px solid #9ba6b5; color: #111827; font-size: 17px; letter-spacing: .08em; text-transform: uppercase; }
+.sheetBrand { display: grid; justify-items: center; font-weight: 900; }
+.sheetBrand b { color: #e6262e; }
+.sheetBrand small { color: #667085; font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
+.projectGrid { display: grid; grid-template-columns: 2fr 1fr; border-bottom: 1px solid #9ba6b5; }
+.projectGrid label { min-height: 68px; display: grid; grid-template-columns: 112px 1fr; align-items: stretch; border-right: 1px solid #9ba6b5; }
+.projectGrid label:last-child { grid-column: 1 / -1; border-top: 1px solid #9ba6b5; }
+.projectGrid label > span, .signoff label > span { padding: 13px 12px; display: flex; align-items: center; color: #344054; font-size: 12px; font-weight: 800; background: #f7f9fc; border-right: 1px solid #d2d8e1; }
+.projectGrid input, .projectGrid textarea, .signoff input { width: 100%; border: 0; border-radius: 0; padding: 12px; color: #111827; background: white; font: inherit; resize: vertical; }
+.projectGrid input:focus, .projectGrid textarea:focus, .signoff input:focus, .costTable input:focus, .summary input:focus { outline: 3px solid rgba(22, 70, 216, .23); outline-offset: -3px; }
+.section { min-width: 0; border-bottom: 1px solid #9ba6b5; }
+.sectionHeading { min-height: 54px; padding: 9px 14px; display: flex; align-items: center; justify-content: space-between; gap: 18px; background: #07a98c; color: white; }
+.sectionHeading > div { display: flex; align-items: baseline; gap: 14px; }
+.sectionHeading span { font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.sectionHeading h2 { margin: 0; font-size: 17px; }
+.addButton { padding: 9px 14px; border: 1px solid rgba(255,255,255,.5); background: rgba(5, 50, 77, .25); font-size: 12px; }
+.printSectionHeader { display: none; }
+.tableScroll { width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; -ms-overflow-style: none; }
+.tableScroll::-webkit-scrollbar { display: none; }
+.costTable { width: 100%; min-width: 800px; border-collapse: collapse; table-layout: fixed; }
+.costTable th, .costTable td { border-right: 1px solid #aeb7c3; border-bottom: 1px solid #c7ced7; }
+.costTable thead th { padding: 10px 9px; color: #052347; background: #52baf0; font-size: 12px; text-align: left; }
+.costTable thead th:nth-child(n+3), .costTable td:nth-child(n+3) { text-align: right; }
+.costTable thead th:first-child { width: 30%; }
+.costTable input { width: 100%; min-width: 0; min-height: 42px; border: 0; border-radius: 0; padding: 8px 9px; color: #151b2b; background: transparent; font: inherit; }
+.costTable input[type="number"], .summary input[type="number"] { appearance: textfield; -moz-appearance: textfield; }
+.costTable input[type="number"] { text-align: right; }
+.costTable input[type="number"]::-webkit-inner-spin-button,
+.costTable input[type="number"]::-webkit-outer-spin-button,
+.summary input[type="number"]::-webkit-inner-spin-button,
+.summary input[type="number"]::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+.costTable input::placeholder { color: #98a2b3; }
+.calculated { min-width: 0; padding: 8px 10px; overflow-wrap: anywhere; color: #14213d; font-variant-numeric: tabular-nums; font-weight: 800; }
+.actionColumn { width: 72px; }
+.rowAction { padding: 5px; text-align: center !important; }
+.rowAction button { border: 0; color: #a6171d; background: transparent; font-size: 10px; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+.costTable tfoot th, .costTable tfoot td { min-width: 0; padding: 10px; overflow-wrap: anywhere; color: white; background: #075789; text-align: right; font-size: 13px; font-weight: 900; }
+.summary { margin-left: auto; width: min(100%, 650px); border-left: 1px solid #aeb7c3; }
+.summary > div { min-height: 44px; display: grid; grid-template-columns: 1fr 100px 170px; align-items: center; border-bottom: 1px solid #aeb7c3; }
+.summary > div > span, .summary label { grid-column: 1 / 3; padding: 10px 14px; text-align: right; }
+.summary strong { min-width: 0; padding: 10px 14px; overflow-wrap: anywhere; text-align: right; font-variant-numeric: tabular-nums; }
+.summary input { width: 82px; margin: 5px 8px 5px auto; padding: 7px; border: 1px solid #aeb7c3; text-align: right; font: inherit; }
+.summary div:has(input) label { grid-column: 1; }
+.summary div:has(input) input { grid-column: 2; }
+.grandTotal { grid-template-columns: 1fr 220px !important; color: #111827; background: #ff918a; font-size: 15px; font-weight: 900; text-transform: uppercase; }
+.grandTotal span { grid-column: 1 !important; }
+.grandTotal strong { font-size: 17px; }
+.signoff { display: grid; }
+.signoff label { min-height: 48px; display: grid; grid-template-columns: 180px 1fr; border-bottom: 1px solid #d2d8e1; }
+.printDisclaimer { margin: 0; padding: 14px 18px; color: #667085; font-size: 10px; line-height: 1.5; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+@media (max-width: 760px) {
+  .appHeader, .intro { align-items: flex-start; }
+  .appHeader, .intro { grid-template-columns: 1fr; flex-direction: column; }
+  .headerActions { width: 100%; display: grid; grid-template-columns: 1fr; align-items: stretch; }
+  .headerActions a { padding-block: 6px; }
+  .headerActions button { width: 100%; white-space: normal; }
+  .funnelSteps { grid-template-columns: 1fr; }
+  .funnelSteps button { padding: 10px 12px; }
+  .intro { gap: 14px; margin-top: 32px; }
+  .projectGrid { grid-template-columns: 1fr; }
+  .projectGrid label { grid-column: 1 !important; border-right: 0; border-top: 1px solid #9ba6b5; }
+  .projectGrid label:first-child { border-top: 0; }
+  .sheetHeader { grid-template-columns: 1fr; }
+  .sheetHeader h2 { border-left: 0; border-top: 1px solid #9ba6b5; }
+  .sectionHeading { align-items: flex-start; }
+  .summary { width: 100%; border-left: 0; }
+  .summary > div { grid-template-columns: 1fr 86px 130px; }
+  .summary strong { padding-inline: 6px; overflow-wrap: normal; white-space: nowrap; font-size: 11px; }
+  .grandTotal { grid-template-columns: 1fr 180px !important; }
+  .grandTotal strong { font-size: 12px; }
+  .signoff label { grid-template-columns: 125px 1fr; }
+}
+
+@media (max-width: 1180px) {
+  .letterWorkspace { grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); }
+  .letterPage { width: 100%; min-height: auto; aspect-ratio: 210 / 297; padding: 5vw; }
+  .letterheadHeader p strong { font-size: clamp(20pt, 4vw, 30pt); }
+  .letterheadHeader p span { font-size: clamp(9pt, 2vw, 14pt); }
+}
+
+@media (max-width: 900px) {
+  .letterWorkspace { grid-template-columns: 1fr; }
+  .letterEditor { max-height: none; position: static; }
+  .letterPage { aspect-ratio: auto; min-height: 1200px; }
+  .letterheadHeader p { flex-wrap: wrap; white-space: normal; }
+}
+
+@page { size: A4 portrait; margin: 10mm; }
+@media print {
+  .noPrint { display: none !important; }
+  .shell { padding: 0; background: white; }
+  .intro { display: none; }
+  .finalSequence { width: 100%; margin: 0; display: block; }
+  .letterPage { width: 100%; min-height: 277mm; padding: 10mm 12mm 8mm; border-color: #777; box-shadow: none; break-after: page; page-break-after: always; }
+  .letterheadHeader { min-height: 34mm; }
+  .letterheadHeader img { width: 34mm; height: 29mm; }
+  .letterheadHeader p strong { font-size: 25pt; }
+  .letterheadHeader p span { font-size: 12pt; }
+  .letterDate { margin-top: 7mm; margin-bottom: 7mm; }
+  .recipientBlock, .salutation { margin-left: 8mm; }
+  .salutation { margin-top: 7mm; margin-bottom: 6mm; }
+  .letterIntroduction { margin-inline: 8mm; }
+  .letterSummary { margin-top: 9mm; }
+  .letterClosing { margin-top: 13mm; }
+  .letterDisclaimer { color: #333; }
+  .sheet { width: 100%; max-width: 100%; margin: 0; overflow: hidden; border-color: #777; box-shadow: none; }
+  .sheetHeader > * { min-height: 9mm; padding: 2mm 3mm; }
+  .sheetHeader h2 { font-size: 11pt; }
+  .sheetBrand { font-size: 10pt; }
+  .projectGrid label { min-height: 9mm; grid-template-columns: 28mm 1fr; }
+  .projectGrid label > span, .signoff label > span { padding: 2mm; font-size: 8pt; }
+  .projectGrid input, .projectGrid textarea { min-height: 8mm; height: 8mm; padding: 1.5mm 2mm; font-size: 8.5pt; resize: none; }
+  .signoff label > span { align-items: center; justify-content: flex-start; text-align: left; }
+  .signoff input { min-height: 8mm; height: auto; align-self: stretch; padding: 0 2mm; text-align: left; font-size: 8.5pt; }
+  .section { break-inside: auto; }
+  .closingBlock { break-inside: avoid; page-break-inside: avoid; }
+  .sectionHeading { display: none; }
+  .sectionHeading h2 { font-size: 10pt; }
+  .tableScroll { overflow: visible; }
+  .costTable { width: 100%; min-width: 0; table-layout: fixed; font-size: 7.5pt; }
+  .costTable thead { display: table-header-group; }
+  .costTable tfoot { display: table-row-group; break-inside: avoid; page-break-inside: avoid; }
+  .costTable tr { break-inside: avoid; page-break-inside: avoid; }
+  .printSectionHeader { display: table-row; }
+  .costTable .printSectionHeader th { padding: 1.5mm 3mm; color: white; background: #07a98c; text-align: left; font-size: 10pt; font-weight: 500; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .costTable .printSectionHeader span { margin-right: 4mm; font-size: 8pt; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+  .costTable thead th, .costTable tfoot th, .costTable tfoot td, .grandTotal { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .costTable thead th, .costTable tfoot th, .costTable tfoot td { padding: 1.4mm 2mm; }
+  .costTable input { min-height: 6mm; padding: 1mm 2mm; }
+  .calculated, .costTable tfoot td, .summary strong { overflow-wrap: anywhere; word-break: break-word; }
+  .calculated { padding: 1mm 2mm; }
+  .costTable .actionColumn { display: none; }
+  .projectGrid input, .projectGrid textarea, .signoff input, .costTable input, .summary input { color: #000; }
+  .projectGrid input::placeholder, .projectGrid textarea::placeholder, .signoff input::placeholder, .costTable input::placeholder { color: transparent; }
+  .summary > div { min-height: 7mm; }
+  .summary > div > span, .summary label, .summary strong { padding: 1.4mm 2mm; font-size: 8pt; }
+  .summary input { height: 6mm; margin-block: .5mm; padding: .5mm 1mm; font-size: 8pt; }
+  .grandTotal strong { font-size: 10pt; }
+  .signoff label { min-height: 8mm; grid-template-columns: 32mm 1fr; }
+  .printDisclaimer { padding: 2mm 3mm; color: #333; font-size: 6.5pt; }
+}

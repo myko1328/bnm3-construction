@@ -17,6 +17,7 @@ Implementation status and operational readiness are separate:
 
 | Feature | Audience and entry point | Implementation | Operational readiness | Roadmap evidence | Last verified |
 | --- | --- | --- | --- | --- | --- |
+| [Bill of materials worksheet](bill-of-materials-worksheet.md) | BNM3 estimators and project personnel; `/tools/bill-of-materials` | Implemented POC | Not production-ready | Product **Milestone 0 — Business rules and estimating foundation** | 2026-11-23 |
 | [Public website and flow preview](public-website-and-flow-preview.md) | Customers and stakeholders; `/` and `/blueprint/customer-flow` | Partially implemented | Not production-ready | Product **Milestone 1 — Brand, landing page, and information architecture** | 2026-10-08 |
 | [Platform and persistence foundation](platform-foundation.md) | Developers and operators; workspace and API | Implemented POC | Not production-ready | **Wiring Milestone 0 — Monorepo and backend foundation**; **Wiring Milestone 1 — Neon environment and database verification** | 2026-10-08 |
 | [Residential LPG assessment](residential-lpg-assessment.md) | Customers; `/assessment/residential-lpg` | Implemented POC | Not production-ready | **Wiring Milestone 2 — Assessment submission to Neon** | 2026-10-08 |
