@@ -50,7 +50,7 @@ No credentials or production identifiers will be committed. Local builds use no 
 - 2026-11-24: Use Cloudflare Workers with Vinext rather than Cloudflare Pages static export because the application includes a dynamic lead-detail route and Cloudflare recommends Vinext for full Next.js applications.
 - 2026-11-24: Preserve the current Next.js toolchain alongside Vinext until compatibility and runtime checks pass.
 - 2026-11-24: Keep the frontend and backend as separate Workers; this migration does not broaden backend exposure or authorize production traffic.
-- 2026-11-24: Use the local Worker name `bnm3-construction-frontend` so generated configuration cannot be confused with the existing `bnm3-construction-be` backend Worker.
+- 2026-11-24: Target the existing frontend Worker `bnm3-construction`; keep it separate from the working `bnm3-construction-be` backend Worker.
 - 2026-11-24: Set `SKIP_DEPENDENCY_INSTALL=true` in Workers Builds and perform `pnpm install --filter frontend... --frozen-lockfile` in the build command. This directly avoids the automatic whole-workspace install observed in the timed-out build while retaining the shared lockfile.
 - 2026-11-24: Use static-assets caching with full-route prerendering for this POC baseline; it creates no external cache resource and leaves the parameterized lead-detail route dynamic.
 - 2026-11-24: Ignore `.cloudflare/**` and `.vinext/**` in ESLint. Generated Worker bundles otherwise caused lint to traverse minified build output and appear stalled.

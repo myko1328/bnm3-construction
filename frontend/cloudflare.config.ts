@@ -2,7 +2,7 @@ import { bindings, defineConfig, defineWorker } from "cf/config";
 
 export default defineConfig({
   worker: defineWorker({
-    name: "bnm3-construction-frontend",
+    name: "bnm3-construction",
     entrypoint: "vinext/server/fetch-handler",
     compatibilityDate: "2026-11-23",
     assets: {

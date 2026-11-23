@@ -6,7 +6,7 @@ This reverse-chronological log records material feature deliveries and status tr
 
 ## 2026-11-24 — Frontend Cloudflare Workers build target
 
-- **Outcome:** Added an additive Vinext target for the existing Next.js frontend, preserving the original Next.js commands while enabling a separate `bnm3-construction-frontend` Cloudflare Worker build. The resource-free baseline prerenders static routes into Worker assets and does not create KV or Cloudflare Images bindings. Workers Builds settings now use an explicit frontend-only dependency install to avoid the whole-workspace install path that previously timed out.
+- **Outcome:** Added an additive Vinext target for the existing Next.js frontend, preserving the original Next.js commands while enabling the separate `bnm3-construction` Cloudflare Worker build. The resource-free baseline prerenders static routes into Worker assets and does not create KV or Cloudflare Images bindings. Workers Builds settings now use an explicit frontend-only dependency install to avoid the whole-workspace install path that previously timed out.
 - **Feature:** [Platform and persistence foundation](features/platform-foundation.md)
 - **Validation:** Vinext compatibility reported 100% support across the current App Router application. The generated Worker production build completed, prerendering eight static routes and retaining the parameterized lead-detail route as dynamic. The full validation record is maintained in the frontend Cloudflare migration ExecPlan.
 - **Remaining limitations:** No live Cloudflare target was changed or deployed. Vinext is beta, and the application remains unsuitable for real customer or staff traffic until **Wiring Milestone 7 — Authentication, permissions, and production hardening** is complete.

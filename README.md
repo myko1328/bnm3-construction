@@ -211,7 +211,7 @@ The frontend has an additive Vinext target for Cloudflare Workers. Its existing 
 
 | Setting | Value |
 | --- | --- |
-| Worker name | `bnm3-construction-frontend` |
+| Worker name | `bnm3-construction` |
 | Root directory | `frontend` |
 | Build variable | `SKIP_DEPENDENCY_INSTALL=true` |
 | Build command | `pnpm install --filter frontend... --frozen-lockfile && pnpm run build:vinext` |
