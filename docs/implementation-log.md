@@ -4,6 +4,20 @@ This reverse-chronological log records material feature deliveries and status tr
 
 [Open the feature catalog](features/README.md)
 
+## 2026-11-24 — BOQ print controls
+
+- **Outcome:** Kept BOQ section item numbers as editing aids while removing them from printed section headings, and added a non-printing option that includes or omits the complete Prepared by row and its current value. The option defaults to included and does not change the worksheet's indicative, non-binding status.
+- **Feature:** [Bill of materials worksheet](features/bill-of-materials-worksheet.md)
+- **Validation:** Frontend lint, type-check, production build, and whitespace checks passed.
+- **Remaining limitations:** The controls are browser-only and are not persisted. The worksheet still has no authentication, approval workflow, revision history, or immutable document generation.
+
+## 2026-11-24 — Printed quotation signature
+
+- **Outcome:** Defaulted the editable BOQ preparer field to the designated BNM3 preparer and added the designated signatory's static signature image to printed quotation letters. The signature is extracted from the user-supplied quotation reference, appears only in print, and does not change the worksheet's indicative, non-binding status or replace qualified review.
+- **Feature:** [Bill of materials worksheet](features/bill-of-materials-worksheet.md)
+- **Validation:** The source PDF and extracted transparent signature were rendered and visually inspected. Frontend lint, type-check, production build, and whitespace checks passed.
+- **Remaining limitations:** The signature is a static image rather than a cryptographic digital signature or per-document approval. The worksheet still has no authentication, persistence, approval workflow, revision history, or immutable document generation.
+
 ## 2026-11-24 — Frontend Cloudflare Workers build target
 
 - **Outcome:** Added an additive Vinext target for the existing Next.js frontend, preserving the original Next.js commands while enabling the separate `bnm3-construction` Cloudflare Worker build. The resource-free baseline prerenders static routes into Worker assets and does not create KV or Cloudflare Images bindings. Workers Builds settings now use an explicit frontend-only dependency install to avoid the whole-workspace install path that previously timed out.

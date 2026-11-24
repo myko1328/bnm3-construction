@@ -17,7 +17,7 @@ Implementation status and operational readiness are separate:
 
 | Feature | Audience and entry point | Implementation | Operational readiness | Roadmap evidence | Last verified |
 | --- | --- | --- | --- | --- | --- |
-| [Bill of materials worksheet](bill-of-materials-worksheet.md) | BNM3 estimators and project personnel; `/tools/bill-of-materials` | Implemented POC | Not production-ready | Product **Milestone 0 — Business rules and estimating foundation** | 2026-11-23 |
+| [Bill of materials worksheet](bill-of-materials-worksheet.md) | BNM3 estimators and project personnel; `/tools/bill-of-materials` | Implemented POC | Not production-ready | Product **Milestone 0 — Business rules and estimating foundation** | 2026-11-24 |
 | [Public website and flow preview](public-website-and-flow-preview.md) | Customers and stakeholders; `/` and `/blueprint/customer-flow` | Partially implemented | Not production-ready | Product **Milestone 1 — Brand, landing page, and information architecture** | 2026-10-12 |
 | [Building water-based fire sprinkler assessment](water-based-fire-sprinkler-assessment.md) | Customers and BNM3 reviewers; `/assessment/fire-sprinkler`, `/tools/fire-sprinkler-budget-estimator`, and the lead dashboard | Implemented POC | Not production-ready | Current priority — Building fire sprinkler assessment and estimator POC | 2026-10-12 |
 | [Platform and persistence foundation](platform-foundation.md) | Developers and operators; workspace and API | Implemented POC | Not production-ready | **Wiring Milestone 0 — Monorepo and backend foundation**; **Wiring Milestone 1 — Neon environment and database verification** | 2026-10-08 |

@@ -17,7 +17,7 @@
 .intro h1 { margin: 7px 0 0; color: #07134f; font-size: clamp(34px, 5vw, 54px); line-height: .98; letter-spacing: -.045em; }
 .intro p { margin: 0; color: #556077; line-height: 1.7; }
 .notice { width: min(1180px, calc(100% - 36px)); margin: 0 auto 24px; padding: 14px 18px; border-left: 4px solid #e6a600; background: #fff7d6; color: #54400b; font-size: 13px; line-height: 1.55; }
-.documentOptions { width: min(1180px, calc(100% - 36px)); margin: -8px auto 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.documentOptions { width: min(1180px, calc(100% - 36px)); margin: -8px auto 24px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .documentOption { min-width: 0; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; border: 1px solid #cbd3df; border-radius: 10px; color: #25324a; background: white; cursor: pointer; }
 .documentOption input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1646d8; }
 .documentOption span { display: grid; gap: 2px; }
@@ -63,6 +63,7 @@
 .letterClosing { margin: 18mm 0 0 10mm; display: grid; width: 75mm; font-size: 10.5pt; }
 .letterClosing p { margin: 0; font-weight: 800; }
 .signatureSpace { height: 17mm; border-bottom: 1px solid #232936; }
+.printSignature { display: none; }
 .letterClosing strong { margin-top: 2mm; text-align: center; text-transform: uppercase; text-decoration: underline; }
 .letterClosing span { text-align: center; font-weight: 800; }
 .finalSequence { width: min(210mm, calc(100% - 36px)); margin: 0 auto; display: grid; gap: 28px; }
@@ -83,7 +84,6 @@
 .sheetHeader h2 { border-left: 1px solid #9ba6b5; color: #111827; font-size: 17px; letter-spacing: .08em; text-transform: uppercase; }
 .sheetBrand { display: grid; justify-items: center; font-weight: 900; }
 .sheetBrand b { color: #e6262e; }
-.sheetBrand small { color: #667085; font-size: 9px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
 .projectGrid { display: grid; grid-template-columns: 2fr 1fr; border-bottom: 1px solid #9ba6b5; }
 .projectGrid label { min-height: 68px; display: grid; grid-template-columns: 112px 1fr; align-items: stretch; border-right: 1px solid #9ba6b5; }
 .projectGrid label:last-child { grid-column: 1 / -1; border-top: 1px solid #9ba6b5; }
@@ -130,6 +130,7 @@
 .signoff { display: grid; }
 .signoff label { min-height: 48px; display: grid; grid-template-columns: 180px 1fr; border-bottom: 1px solid #d2d8e1; }
 .printDisclaimer { margin: 0; padding: 14px 18px; color: #667085; font-size: 10px; line-height: 1.5; }
+.printOnly { display: none; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 @media (max-width: 760px) {
@@ -184,6 +185,8 @@
 }
 @media print {
   .noPrint { display: none !important; }
+  .screenOnly { display: none !important; }
+  .printOnly { display: inline; }
   .shell { padding: 0; background: white; }
   .intro { display: none; }
   .finalSequence { width: auto; margin: 0; display: block; }
@@ -199,8 +202,28 @@
   .letterIntroduction { margin-inline: 8mm; }
   .letterSummary { margin-top: 9mm; }
   .letterClosing { margin-top: 13mm; }
-  .finalSequence .sheet { page: boqPage; counter-reset: boqPage 0; width: 194mm; max-width: 194mm; margin: 0; overflow: hidden; border: none !important; outline: 0; box-shadow: none; }
-  .sheetHeader, .projectGrid, .projectGrid label, .projectGrid label:last-child, .projectGrid label > span, .section, .costTable th, .costTable td, .summary, .summary > div, .summary input, .signoff label, .signoff label > span { border-color: #9ba6b5; border-width: .25mm; }
+  .signatureSpace { border-bottom: 0; display: flex; align-items: flex-end; justify-content: center; }
+  .printSignature { display: block; width: auto; height: 16mm; object-fit: contain; }
+  .finalSequence .sheet { --boq-border: .75pt solid #8792a2; page: boqPage; counter-reset: boqPage 0; width: 194mm; max-width: 194mm; margin: 0; overflow: hidden; border: none !important; outline: 0; box-shadow: none; }
+  .sheetHeader { border: var(--boq-border); }
+  .sheetHeader > * { border-bottom: 0; }
+  .sheetHeader h2 { border-left: var(--boq-border); }
+  .projectGrid { border-left: var(--boq-border); border-bottom: var(--boq-border); }
+  .projectGrid label { border-right: var(--boq-border); }
+  .projectGrid label:last-child { border-top: var(--boq-border); }
+  .projectGrid label > span, .signoff label > span { border-right: var(--boq-border); }
+  .section { border-bottom: 0; }
+  .costTable { border: var(--boq-border); border-collapse: collapse; }
+  .costTable th, .costTable td { border: var(--boq-border); }
+  .projectGrid + .section .costTable, .section + .section .costTable { border-top: 0; }
+  .projectGrid + .section .costTable thead tr:first-child th, .section + .section .costTable thead tr:first-child th { border-top: 0; }
+  .summary { border-top: 0; border-right: var(--boq-border); border-left: var(--boq-border); }
+  .summary > div { border-bottom: var(--boq-border); }
+  .summary > div:last-child { border-bottom: 0; }
+  .summary input { border: 0; background: transparent; }
+  .signoff { border-top: var(--boq-border); border-right: var(--boq-border); border-left: var(--boq-border); }
+  .signoff label { border-bottom: var(--boq-border); }
+  .signoff label:first-child { border-bottom: 0; }
   .reviewSheet input, .reviewSheet textarea { caret-color: transparent; }
   .sheetHeader > * { min-height: 9mm; padding: 2mm 3mm; }
   .sheetHeader h2 { font-size: 11pt; }
@@ -221,7 +244,6 @@
   .costTable tr { break-inside: avoid; page-break-inside: avoid; }
   .printSectionHeader { display: table-row; }
   .costTable .printSectionHeader th { padding: 1.5mm 3mm; color: white; background: #07a98c; text-align: left; font-size: 10pt; font-weight: 500; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .costTable .printSectionHeader span { margin-right: 4mm; font-size: 8pt; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
   .costTable thead th, .costTable tfoot th, .costTable tfoot td, .grandTotal { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
   .costTable thead th, .costTable tfoot th, .costTable tfoot td { padding: 1.4mm 2mm; }
   .costTable input { min-height: 6mm; padding: 1mm 2mm; }
@@ -230,8 +252,11 @@
   .costTable .actionColumn { display: none; }
   .projectGrid input, .projectGrid textarea, .signoff input, .costTable input, .summary input { color: #000; }
   .projectGrid input::placeholder, .projectGrid textarea::placeholder, .signoff input::placeholder, .costTable input::placeholder { color: transparent; }
-  .summary > div { min-height: 7mm; }
+  .summary > div { min-height: 7mm; grid-template-columns: 1fr 40mm; }
+  .summary > div > span, .summary label { grid-column: 1; }
   .summary > div > span, .summary label, .summary strong { padding: 1.4mm 2mm; font-size: 8pt; }
+  .summary div:has(input) input { display: none; }
+  .summary div:has(input) strong { grid-column: 2; }
   .summary input { height: 6mm; margin-block: .5mm; padding: .5mm 1mm; font-size: 8pt; }
   .grandTotal strong { font-size: 10pt; }
   .signoff label { min-height: 8mm; grid-template-columns: 32mm 1fr; }

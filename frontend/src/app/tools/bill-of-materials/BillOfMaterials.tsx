@@ -64,7 +64,7 @@ const EMPTY_DETAILS: ProjectDetails = {
   location: "",
   duration: "",
   paymentTerms: "",
-  preparedBy: "",
+  preparedBy: "Antonio Miparanum",
 };
 
 const EMPTY_LETTER: LetterDetails = {
@@ -74,7 +74,7 @@ const EMPTY_LETTER: LetterDetails = {
   recipientCompany: "",
   recipientAddress: "",
   salutation: "Sir/Madam:",
-  introduction: "Herewith is our indicative working cost for",
+  introduction: "Herewith is our quotation for the",
   companyAddress: "Noville, Tubod, Iligan City",
   contactPerson: "Engr. Antonio L. Miparanum",
   contactTitle: "Proprietor",
@@ -129,7 +129,7 @@ function onePageSample(): WorksheetSample {
       location: "Mandaue City, Cebu (mock site)",
       duration: "12 calendar days",
       paymentTerms: "50% mobilization, 40% progress, 10% after testing",
-      preparedBy: "Sample Estimator - For testing only",
+      preparedBy: "Antonio Miparanum",
     },
     letter: {
       date: "2026-11-23",
@@ -138,7 +138,7 @@ function onePageSample(): WorksheetSample {
       recipientCompany: "Sample Food Processing Company",
       recipientAddress: "Mandaue City, Cebu (mock address)",
       salutation: "Dear Ms. Santos:",
-      introduction: "Herewith is our indicative working cost for",
+      introduction: "Herewith is our quotation for the",
       companyAddress: "Noville, Tubod, Iligan City",
       contactPerson: "Engr. Antonio L. Miparanum",
       contactTitle: "Proprietor",
@@ -214,7 +214,7 @@ function multiPageSample(): WorksheetSample {
       location: "Cebu City (mock site)",
       duration: "30 calendar days",
       paymentTerms: "30% mobilization, progress billing, 10% after testing",
-      preparedBy: "Sample Estimator - For pagination testing only",
+      preparedBy: "Antonio Miparanum",
     },
     letter: {
       date: "2026-11-23",
@@ -223,7 +223,7 @@ function multiPageSample(): WorksheetSample {
       recipientCompany: "Sample Industrial Kitchen Corporation",
       recipientAddress: "Cebu City (mock address)",
       salutation: "Dear Mr. Reyes:",
-      introduction: "Herewith is our indicative working cost for",
+      introduction: "Herewith is our quotation for the",
       companyAddress: "Noville, Tubod, Iligan City",
       contactPerson: "Engr. Antonio L. Miparanum",
       contactTitle: "Proprietor",
@@ -271,7 +271,7 @@ function LetterPage({ letter, project, quoteAmount }: { letter: LetterDetails; p
 
       <p className={styles.salutation}>{text(letter.salutation, "Sir/Madam:")}</p>
       <p className={styles.letterIntroduction}>
-        {text(letter.introduction, "Herewith is our indicative working cost for")} <strong>{text(project.title, "the proposed project")}</strong>{project.location ? <> at <strong>{project.location}</strong></> : null}.
+        {text(letter.introduction, "Herewith is our quotation for the")} <strong>{text(project.title, "proposed project")}</strong>{project.location ? <> at <strong>{project.location}</strong></> : null}.
       </p>
 
       <dl className={styles.letterSummary}>
@@ -282,7 +282,9 @@ function LetterPage({ letter, project, quoteAmount }: { letter: LetterDetails; p
 
       <div className={styles.letterClosing}>
         <p>{text(letter.closing, "Thank you,")}</p>
-        <div className={styles.signatureSpace} aria-hidden="true" />
+        <div className={styles.signatureSpace} aria-hidden="true">
+          <Image className={styles.printSignature} src="/antonio-miparanum-signature.png" alt="" width={205} height={148} />
+        </div>
         <strong>{text(letter.signatoryName, "Authorized signatory")}</strong>
         <span>{text(letter.signatoryTitle, "Position")}</span>
       </div>
@@ -324,7 +326,7 @@ function CostSection({
     <section className={styles.section} aria-labelledby={`${title.toLowerCase().replaceAll(" ", "-")}-heading`}>
       <div className={styles.sectionHeading}>
         <div>
-          <span>Item {itemNumber}</span>
+          <span className={styles.noPrint}>Item {itemNumber}</span>
           <h2 id={`${title.toLowerCase().replaceAll(" ", "-")}-heading`}>{title}</h2>
         </div>
         <button className={`${styles.addButton} ${styles.noPrint}`} type="button" onClick={addRow}>+ Add row</button>
@@ -333,7 +335,7 @@ function CostSection({
         <table className={styles.costTable}>
           <thead>
             <tr className={styles.printSectionHeader} aria-hidden="true">
-              <th colSpan={5}><span>Item {itemNumber}</span>{title}</th>
+              <th colSpan={5}>{title}</th>
             </tr>
             <tr><th>Description</th><th>Unit</th><th>Quantity</th><th>Unit cost (PHP)</th><th>Total (PHP)</th><th className={styles.actionColumn}><span className={styles.srOnly}>Actions</span></th></tr>
           </thead>
@@ -367,6 +369,7 @@ export default function BillOfMaterials() {
   const [contingencyRate, setContingencyRate] = useState("10");
   const [vatRate, setVatRate] = useState("12");
   const [showContingency, setShowContingency] = useState(true);
+  const [showPreparedBy, setShowPreparedBy] = useState(true);
   const [showDetailedDisclaimer, setShowDetailedDisclaimer] = useState(true);
 
   useEffect(() => {
@@ -409,6 +412,7 @@ export default function BillOfMaterials() {
     || otherCosts.some((row) => Object.entries(row).some(([field, value]) => field !== "id" && Boolean(value)))
     || contingencyRate !== "10"
     || !showContingency
+    || !showPreparedBy
     || vatRate !== "12";
   const loadSample = (createSample: () => WorksheetSample) => {
     if (hasWorksheetData && !window.confirm("Replace the current worksheet with synthetic mock project data?")) return;
@@ -468,6 +472,10 @@ export default function BillOfMaterials() {
           <span><strong>Show contingency in BOQ</strong><small>Display the contingency percentage and amount while preserving the entered rate and calculated total.</small></span>
         </label>
         <label className={styles.documentOption}>
+          <input type="checkbox" checked={showPreparedBy} onChange={(event) => setShowPreparedBy(event.target.checked)} />
+          <span><strong>Show prepared by in BOQ</strong><small>Display the Prepared by row and its current value in the BOQ.</small></span>
+        </label>
+        <label className={styles.documentOption}>
           <input type="checkbox" checked={showDetailedDisclaimer} onChange={(event) => setShowDetailedDisclaimer(event.target.checked)} />
           <span><strong>Show detailed BOQ disclaimer</strong><small>Include the qualified-review note at the end of the bill of quantities.</small></span>
         </label>
@@ -505,7 +513,7 @@ export default function BillOfMaterials() {
 
         {step === 1 || step === 3 ? <article className={`${styles.sheet} ${step === 3 ? styles.reviewSheet : ""}`}>
         <header className={styles.sheetHeader}>
-          <div className={styles.sheetBrand}><span><b>BNM3</b> CONSTRUCTION</span><small>Indicative working sheet</small></div>
+          <div className={styles.sheetBrand}><span><b>BNM3</b> ENTERPRISES</span></div>
           <h2>Bill of quantities</h2>
         </header>
 
@@ -519,14 +527,14 @@ export default function BillOfMaterials() {
 
         <section className={styles.section} aria-labelledby="labor-heading">
           <div className={styles.sectionHeading}>
-            <div><span>Item 2</span><h2 id="labor-heading">Labor</h2></div>
+            <div><span className={styles.noPrint}>Item 2</span><h2 id="labor-heading">Labor</h2></div>
             <button className={`${styles.addButton} ${styles.noPrint}`} type="button" onClick={addLaborRow}>+ Add personnel row</button>
           </div>
           <div className={styles.tableScroll}>
             <table className={styles.costTable}>
               <thead>
                 <tr className={styles.printSectionHeader} aria-hidden="true">
-                  <th colSpan={5}><span>Item 2</span>Labor</th>
+                  <th colSpan={5}>Labor</th>
                 </tr>
                 <tr><th>Personnel</th><th>Quantity</th><th>No. of days</th><th>Daily rate (PHP)</th><th>Total (PHP)</th><th className={styles.actionColumn}><span className={styles.srOnly}>Actions</span></th></tr>
               </thead>
@@ -552,15 +560,15 @@ export default function BillOfMaterials() {
         <div className={styles.closingBlock}>
           <section className={styles.summary} aria-label="Project cost summary">
             <div><span>Subtotal cost</span><strong>{amount(totals.subtotal)}</strong></div>
-            {showContingency ? <div><label htmlFor="contingency-rate">Contingency (%)</label><input id="contingency-rate" type="number" min="0" step="0.1" value={contingencyRate} onChange={(event) => setContingencyRate(event.target.value)} /><strong>{amount(totals.contingency)}</strong></div> : null}
-            <div><label htmlFor="vat-rate">VAT (%)</label><input id="vat-rate" type="number" min="0" step="0.1" value={vatRate} onChange={(event) => setVatRate(event.target.value)} /><strong>{amount(totals.vat)}</strong></div>
+            {showContingency ? <div><label htmlFor="contingency-rate"><span className={styles.screenOnly}>Contingency (%)</span><span className={styles.printOnly}>Contingency</span></label><input id="contingency-rate" type="number" min="0" step="0.1" value={contingencyRate} onChange={(event) => setContingencyRate(event.target.value)} /><strong>{amount(totals.contingency)}</strong></div> : null}
+            <div><label htmlFor="vat-rate"><span className={styles.screenOnly}>VAT (%)</span><span className={styles.printOnly}>VAT ({vatRate || "0"}%)</span></label><input id="vat-rate" type="number" min="0" step="0.1" value={vatRate} onChange={(event) => setVatRate(event.target.value)} /><strong>{amount(totals.vat)}</strong></div>
             <div className={styles.grandTotal}><span>Overall project cost</span><strong>PHP {amount(totals.overall)}</strong></div>
           </section>
 
           <section className={styles.signoff} aria-label="Project terms">
             <label><span>Duration</span><input value={details.duration} onChange={(event) => updateDetails("duration", event.target.value)} placeholder="e.g. 30 calendar days" /></label>
             <label><span>Terms of payment</span><input value={details.paymentTerms} onChange={(event) => updateDetails("paymentTerms", event.target.value)} placeholder="Enter agreed terms" /></label>
-            <label><span>Prepared by</span><input value={details.preparedBy} onChange={(event) => updateDetails("preparedBy", event.target.value)} placeholder="Name and role" /></label>
+            {showPreparedBy ? <label><span>Prepared by</span><input value={details.preparedBy} onChange={(event) => updateDetails("preparedBy", event.target.value)} placeholder="Name and role" /></label> : null}
           </section>
           {showDetailedDisclaimer ? <p className={styles.printDisclaimer}>Indicative working cost only. Not a binding quotation. Quantities, rates, tax treatment, technical feasibility, and site conditions require qualified review.</p> : null}
         </div>
