@@ -4,6 +4,20 @@ This reverse-chronological log records material feature deliveries and status tr
 
 [Open the feature catalog](features/README.md)
 
+## 2026-11-25 — Direct signed PDF export
+
+- **Outcome:** Replaced the BOQ workflow's browser print-dialog export with a direct client-generated A4 PDF download. The letter is always first, embeds the static authorized signature above the signatory name, and is followed by a row-safe paginated BOQ with repeated continuation headings and BOQ-only numbering. Export controls expose progress and a retryable inline failure message without clearing worksheet state.
+- **Feature:** [Bill of materials worksheet](features/bill-of-materials-worksheet.md)
+- **Validation:** Compact and 46-line-item downloads were generated in the browser, inspected with PDF metadata tools, rendered with Poppler, and visually checked for A4 sizing, ordering, signature placement, repeated headings, intact totals, and page numbering. Frontend lint and type-check passed; production-build and final whitespace evidence are recorded in the active ExecPlan.
+- **Remaining limitations:** The PDF is generated locally and is not an immutable or persisted approval record. The embedded signature remains a static image rather than a cryptographic digital signature, and all costs require qualified review.
+
+## 2026-11-25 — Contingency calculation toggle
+
+- **Outcome:** Changed the BOQ contingency option from display-only behavior to a calculation control. Disabling it now removes contingency from the summary and overall project cost while preserving the entered percentage; re-enabling it restores the calculated contribution.
+- **Feature:** [Bill of materials worksheet](features/bill-of-materials-worksheet.md)
+- **Validation:** Frontend lint, type-check, production build, browser smoke checks, and whitespace checks passed.
+- **Remaining limitations:** The worksheet remains browser-only without persistence, authentication, approval workflow, revision history, or immutable document generation. All totals remain indicative and require qualified review.
+
 ## 2026-11-24 — BOQ print controls
 
 - **Outcome:** Kept BOQ section item numbers as editing aids while removing them from printed section headings, and added a non-printing option that includes or omits the complete Prepared by row and its current value. The option defaults to included and does not change the worksheet's indicative, non-binding status.

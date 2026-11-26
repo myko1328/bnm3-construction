@@ -371,6 +371,8 @@ export default function BillOfMaterials() {
   const [showContingency, setShowContingency] = useState(true);
   const [showPreparedBy, setShowPreparedBy] = useState(true);
   const [showDetailedDisclaimer, setShowDetailedDisclaimer] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
     const previousDocumentOverflow = document.documentElement.style.overflowX;
@@ -388,10 +390,10 @@ export default function BillOfMaterials() {
     const laborCost = labor.reduce((sum, row) => sum + laborTotal(row), 0);
     const otherCost = otherCosts.reduce((sum, row) => sum + costTotal(row), 0);
     const subtotal = materialsTotal + laborCost + otherCost;
-    const contingency = subtotal * numberValue(contingencyRate) / 100;
+    const contingency = showContingency ? subtotal * numberValue(contingencyRate) / 100 : 0;
     const vat = subtotal * numberValue(vatRate) / 100;
     return { materialsTotal, laborCost, otherCost, subtotal, contingency, vat, overall: subtotal + contingency + vat };
-  }, [contingencyRate, labor, materials, otherCosts, vatRate]);
+  }, [contingencyRate, labor, materials, otherCosts, showContingency, vatRate]);
 
   const updateDetails = (field: keyof ProjectDetails, value: string) => setDetails((current) => ({ ...current, [field]: value }));
   const updateLetter = (field: keyof LetterDetails, value: string) => setLetter((current) => ({ ...current, [field]: value }));
@@ -427,13 +429,30 @@ export default function BillOfMaterials() {
     setVatRate(sample.vatRate);
     setStep(1);
   };
-  const exportCombinedPdf = () => {
-    if (step === 3) {
-      window.print();
-      return;
+  const exportCombinedPdf = async () => {
+    if (isExporting) return;
+    setExportError("");
+    setIsExporting(true);
+    try {
+      const { generateBillOfMaterialsPdf } = await import("./bill-of-materials-pdf");
+      await generateBillOfMaterialsPdf({
+        project: details,
+        letter,
+        materials,
+        labor,
+        otherCosts,
+        contingencyRate,
+        vatRate,
+        showContingency,
+        showPreparedBy,
+        showDetailedDisclaimer,
+        totals,
+      });
+    } catch {
+      setExportError("The PDF could not be created. Check the document images and try the export again.");
+    } finally {
+      setIsExporting(false);
     }
-    setStep(3);
-    window.requestAnimationFrame(() => window.requestAnimationFrame(() => window.print()));
   };
 
   return (
@@ -447,14 +466,14 @@ export default function BillOfMaterials() {
           <Link href="/">Back to website</Link>
           <button className={styles.sampleButton} type="button" onClick={() => loadSample(onePageSample)} title="Replace the worksheet with a synthetic one-page test project">Load 1-page sample</button>
           <button className={styles.sampleButton} type="button" onClick={() => loadSample(multiPageSample)} title="Replace the worksheet with a synthetic multi-page test project">Load multi-page sample</button>
-          <button type="button" onClick={exportCombinedPdf}>Export combined PDF</button>
+          <button type="button" onClick={exportCombinedPdf} disabled={isExporting}>{isExporting ? "Creating PDF..." : "Download PDF"}</button>
         </div>
       </header>
 
       <nav className={`${styles.funnelSteps} ${styles.noPrint}`} aria-label="Document preparation steps">
         <button type="button" onClick={() => setStep(1)} aria-current={step === 1 ? "step" : undefined}><span>1</span><strong>BOQ</strong><small>Build the costs</small></button>
         <button type="button" onClick={() => setStep(2)} aria-current={step === 2 ? "step" : undefined}><span>2</span><strong>Letterhead</strong><small>Prepare the letter</small></button>
-        <button type="button" onClick={() => setStep(3)} aria-current={step === 3 ? "step" : undefined}><span>3</span><strong>Final view</strong><small>Review and export</small></button>
+        <button type="button" onClick={() => setStep(3)} aria-current={step === 3 ? "step" : undefined}><span>3</span><strong>Final view</strong><small>Review and download</small></button>
       </nav>
 
       <div className={`${styles.intro} ${styles.noPrint}`}>
@@ -469,7 +488,7 @@ export default function BillOfMaterials() {
       <div className={`${styles.documentOptions} ${styles.noPrint}`}>
         <label className={styles.documentOption}>
           <input type="checkbox" checked={showContingency} onChange={(event) => setShowContingency(event.target.checked)} />
-          <span><strong>Show contingency in BOQ</strong><small>Display the contingency percentage and amount while preserving the entered rate and calculated total.</small></span>
+          <span><strong>Include contingency in BOQ</strong><small>Add contingency to the project total when enabled. The entered rate is preserved when disabled.</small></span>
         </label>
         <label className={styles.documentOption}>
           <input type="checkbox" checked={showPreparedBy} onChange={(event) => setShowPreparedBy(event.target.checked)} />
@@ -480,6 +499,8 @@ export default function BillOfMaterials() {
           <span><strong>Show detailed BOQ disclaimer</strong><small>Include the qualified-review note at the end of the bill of quantities.</small></span>
         </label>
       </div>
+
+      {exportError ? <p className={`${styles.exportError} ${styles.noPrint}`} role="alert">{exportError}</p> : null}
 
       <div className={step === 3 ? styles.finalSequence : undefined}>
         {step === 2 ? (
@@ -579,7 +600,7 @@ export default function BillOfMaterials() {
         {step > 1 ? <button className={styles.secondaryAction} type="button" onClick={() => setStep((step - 1) as 1 | 2)}>Back</button> : <span />}
         {step === 1 ? <button type="button" onClick={() => setStep(2)}>Continue to letterhead</button> : null}
         {step === 2 ? <button type="button" onClick={() => setStep(3)}>Review final document</button> : null}
-        {step === 3 ? <button type="button" onClick={exportCombinedPdf}>Export combined PDF</button> : null}
+        {step === 3 ? <button type="button" onClick={exportCombinedPdf} disabled={isExporting}>{isExporting ? "Creating PDF..." : "Download PDF"}</button> : null}
       </div>
     </main>
   );

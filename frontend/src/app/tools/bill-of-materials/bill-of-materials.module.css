@@ -10,6 +10,7 @@
 .headerActions button, .addButton { border: 0; border-radius: 8px; background: #f23838; color: white; font: inherit; font-weight: 800; cursor: pointer; }
 .headerActions button { padding: 12px 16px; white-space: nowrap; }
 .headerActions button:hover, .addButton:hover { background: #c91920; }
+.headerActions button:disabled, .funnelActions button:disabled { cursor: wait; opacity: .65; }
 .headerActions .sampleButton { border: 1px solid #aebcff; color: #07166f; background: #f4f6ff; }
 .headerActions .sampleButton:hover { color: #07166f; background: #dce3ff; }
 .intro { width: min(1180px, calc(100% - 36px)); margin: 44px auto 20px; display: grid; grid-template-columns: 1fr minmax(280px, 460px); gap: 40px; align-items: end; }
@@ -22,6 +23,7 @@
 .documentOption input { width: 17px; height: 17px; margin: 2px 0 0; accent-color: #1646d8; }
 .documentOption span { display: grid; gap: 2px; }
 .documentOption small { color: #667085; font-size: 12px; font-weight: 500; }
+.exportError { width: min(1180px, calc(100% - 36px)); margin: -12px auto 24px; padding: 12px 16px; border: 1px solid #d92d20; border-radius: 8px; color: #912018; background: #fff1f0; font-size: 13px; font-weight: 700; }
 .funnelSteps { width: min(900px, calc(100% - 36px)); margin: 28px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .funnelSteps button { min-width: 0; padding: 14px; display: grid; grid-template-columns: 34px 1fr; column-gap: 10px; align-items: center; border: 1px solid #cbd3df; border-radius: 12px; color: #526078; background: white; text-align: left; cursor: pointer; }
 .funnelSteps button > span { grid-row: 1 / 3; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; color: #526078; background: #e9edf4; font-weight: 900; }
